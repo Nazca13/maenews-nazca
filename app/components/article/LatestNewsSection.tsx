@@ -1,6 +1,6 @@
 "use client";
 
-import { Article } from "../../types";
+import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "./LatestNewsArticle";
 import { Flame } from "lucide-react";
 

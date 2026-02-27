@@ -1,16 +1,16 @@
 import dynamic from "next/dynamic";
-import { Hero } from "../components/Hero";
-import { Sidebar } from "../components/Sidebar";
+import { Hero } from "../components/pages/Hero";
+import { Sidebar } from "../components/layout/Sidebar";
 import { EventBanner } from "../components/BannerEvent";
 import { LatestNewsSection } from "../components/article/LatestNewsSection";
 import { InfiniteScrollArticles } from "../components/InfiniteScrollArticles";
-import { FeaturedRow } from "../components/FeaturedRow"; // 1. Impor komponen baru
+import { FeaturedRow } from "../components/pages/FeaturedRow";
 import {
   getAllArticles,
   getTrendingItems,
   getUpcomingEvents,
 } from "../lib/api";
-import { ArticleFeed } from "../components/ArticleFeed";
+import { ArticleFeed } from "../components/pages/ArticleFeed";
 
 const SliderNews = dynamic(
   () => import("../components/slider/SliderNews").then((mod) => mod.SliderNews),

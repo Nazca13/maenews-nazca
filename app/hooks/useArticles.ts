@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Article } from "../types";
+import { Article } from "@/app/typing";
 import { mockArticles } from "../data/mockData";
 
 export function useArticles() {

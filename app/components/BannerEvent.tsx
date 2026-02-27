@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { Calendar, MapPin, Ticket } from "lucide-react";
-import { Event } from "@/app/types";
+import { Event } from "@/app/typing";
 import Link from "next/link";
 
 // Tipe data untuk sisa waktu

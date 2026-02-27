@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
-import { navItems } from "../data/Navigation";
-import { SearchComponent } from "./SearchComponent"; // Impor komponen pencarian
+import { navItems } from "@/app/data/Navigation";
+import { SearchComponent } from "@/app/components/SearchComponent"; // Impor komponen pencarian
 
 // --- Sub-komponen ---
 

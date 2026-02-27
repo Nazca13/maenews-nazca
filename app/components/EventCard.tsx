@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Event } from "@/app/types";
+import { Event } from "@/app/typing";
 import { Calendar, MapPin } from "lucide-react";
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';

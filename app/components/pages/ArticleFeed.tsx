@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Article } from "../types";
-import { LatestNewsArticle } from "./article/LatestNewsArticle";
+import { Article } from "@/app/typing";
+import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
 import { Loader2, Flame } from "lucide-react";
 
 const ARTICLES_PER_PAGE = 5;

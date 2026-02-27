@@ -1,0 +1,2701 @@
+# App Source Code
+
+### app/(main)/article/[slug]/page.tsx
+
+```tsx
+import { getArticleBySlug, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
+import { ArticleDetail } from "@/app/components/article/ArticleDetail";
+import { Sidebar } from "@/app/components/Sidebar";
+import { notFound } from "next/navigation";
+import { ArticleViewTracker } from "@/app/components/ArticleViewTracker"; // Impor pemicu
+
+type Props = {
+  params: { slug: string };
+};
+
+export default async function ArticlePage({ params }: Props) {
+  const article = await getArticleBySlug(params.slug);
+
+  if (!article) {
+    notFound();
+  }
+
+  const [trendingItemsRaw, upcomingEventsRaw] = await Promise.all([
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
+  const trendingItems = trendingItemsRaw ?? [];
+  const upcomingEvents = upcomingEventsRaw ?? [];
+
+  return (
+    <>
+      {/* Tempatkan pemicu di sini, ia akan berjalan di client */}
+      <ArticleViewTracker slug={params.slug} />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <ArticleDetail article={article} />
+          </div>
+          <div className="lg:col-span-1">
+            <Sidebar
+              trendingItems={trendingItems}
+              upcomingEvents={upcomingEvents}
+            />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+```
+
+### app/(main)/category/[categoryName]/page.tsx
+
+```tsx
+import { getArticlesByCategory, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
+import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
+import { Sidebar } from "@/app/components/Sidebar";
+import { Tag } from "lucide-react";
+import { Article } from "@/app/types";
+
+// Tipe untuk params yang diterima oleh halaman
+type Props = {
+  params: {
+    categoryName: string;
+  };
+};
+
+// Fungsi untuk mengubah slug URL (mis: "content-creator") menjadi judul ("Content Creator")
+function formatCategoryTitle(slug: string): string {
+  return slug
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+// Halaman ini adalah Server Component
+export default async function CategoryPage({ params }: Props) {
+  // Mengambil dan mendekode nama kategori dari URL
+  const categorySlug = decodeURIComponent(params.categoryName);
+
+  // Mengambil data artikel untuk kategori ini dan data untuk sidebar dari API
+  const [articles, trendingItems, upcomingEvents] = await Promise.all([
+    getArticlesByCategory(categorySlug),
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
+
+  const title = formatCategoryTitle(categorySlug);
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Kolom Kiri: Konten Artikel Kategori */}
+        <div className="lg:col-span-2">
+          <section>
+            {/* Judul Halaman Kategori */}
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b">
+              <Tag className="w-6 h-6 text-primary" />
+              <h1 className="text-3xl font-bold text-gray-900">
+                Kategori: {title}
+              </h1>
+            </div>
+
+            {/* Daftar Artikel atau Pesan Jika Kosong */}
+            {(articles ?? []).length > 0 ? (
+              <div className="flex flex-col gap-6">
+                {(articles as Article[]).map((article) => (
+                  <LatestNewsArticle key={article.id} article={article} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <h2 className="text-2xl font-bold text-gray-700">Oops!</h2>
+                <p className="text-gray-500 mt-2">
+                  Belum ada artikel di kategori {title}.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Kolom Kanan: Sidebar */}
+        <div className="lg:col-span-1">
+          <Sidebar
+            trendingItems={trendingItems ?? []}
+            upcomingEvents={upcomingEvents ?? []}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+```
+
+### app/(main)/event/[eventSlug]/page.tsx
+
+```tsx
+import { getEventBySlug } from "@/app/lib/api";
+import { notFound } from "next/navigation";
+import { Calendar, MapPin } from "lucide-react";
+import Image from "next/image";
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { Badge } from "@/app/components/ui/badge";
+
+type Props = {
+  params: { eventSlug: string };
+};
+
+export default async function EventDetailPage({ params }: Props) {
+  const event = await getEventBySlug(params.eventSlug);
+
+  if (!event) {
+    notFound();
+  }
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="relative w-full h-64 md:h-96">
+            <Image 
+                src={event.imageUrl}
+                alt={event.title}
+                fill
+                className="object-cover"
+                priority
+                unoptimized
+            />
+        </div>
+        <div className="p-6 md:p-8">
+            <Badge className="mb-4 bg-primary/10 text-primary font-semibold">{event.category}</Badge>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{event.title}</h1>
+            <div className="flex flex-col sm:flex-row gap-x-8 gap-y-2 text-gray-600 mb-6">
+                <div className="flex items-center">
+                    <Calendar className="w-5 h-5 mr-2 text-primary" />
+                    <span className="font-medium">{format(new Date(event.date), "EEEE, d MMMM yyyy", { locale: id })}</span>
+                </div>
+                <div className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-primary" />
+                    <span className="font-medium">{event.location}</span>
+                </div>
+            </div>
+            <div className="prose max-w-none">
+                <p>{event.description}</p>
+            </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+```
+
+### app/(main)/event/page.tsx
+
+```tsx
+import { getUpcomingEvents } from "@/app/lib/api";
+import { Calendar } from "lucide-react";
+import { EventCard } from "@/app/components/EventCard";
+
+export default async function EventsPage() {
+  const upcomingEvents = await getUpcomingEvents();
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="flex items-center gap-2 mb-6 pb-4 border-b">
+        <Calendar className="w-6 h-6 text-primary" />
+        <h1 className="text-3xl font-bold text-gray-900">
+          Semua Event Mendatang
+        </h1>
+      </div>
+
+      {upcomingEvents && upcomingEvents.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {upcomingEvents.map((event) => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-16">
+          <h2 className="text-2xl font-bold text-gray-700">Tidak Ada Event</h2>
+          <p className="text-gray-500 mt-2">
+            Saat ini belum ada event yang dijadwalkan. Cek kembali nanti!
+          </p>
+        </div>
+      )}
+    </main>
+  );
+}
+
+```
+
+### app/(main)/gallery/page.tsx
+
+```tsx
+import { Camera } from "lucide-react";
+
+// Halaman ini adalah Server Component
+export default async function GalleryPage() {
+  return (
+    <main className="container mx-auto px-4 py-8">
+      {/* Judul Halaman */}
+      <div className="flex items-center gap-2 mb-6 pb-4 border-b">
+        <Camera className="w-6 h-6 text-primary" />
+        <h1 className="text-3xl font-bold text-gray-900">Gallery Animae</h1>
+      </div>
+
+      <div className="relative w-full overflow-hidden rounded-lg shadow-lg aspect-[4/5] sm:aspect-video">
+        <iframe
+          className="absolute top-0 left-0 w-full h-full"
+          src="https://id.wikipedia.org/wiki/Anime"
+          title="Wikipedia - Anime"
+          frameBorder="0"
+          allowFullScreen
+        ></iframe>
+      </div>
+    </main>
+  );
+}
+
+```
+
+### app/(main)/globals.css
+
+```css
+@import "tailwindcss";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: #fb7f04;
+    --secondary: #fb3604;
+    --tertiary: #fbd407;
+    --base-text: #374151;
+    --subtle-text: #6b7280;
+    --border-color: #d1d5db;
+    --background: #ffffff;
+    --foreground: #000000;
+  }
+}
+
+@layer utilities {
+  /* Background Colors */
+  .bg-primary {
+    background-color: var(--primary);
+  }
+  .bg-secondary {
+    background-color: var(--secondary);
+  }
+  .bg-tertiary {
+    background-color: var(--tertiary);
+  }
+
+  /* Hover Background Colors */
+  .hover\:bg-primary:hover {
+    background-color: var(--primary);
+  }
+  .hover\:bg-secondary:hover {
+    background-color: var(--secondary);
+  }
+  .hover\:bg-tertiary:hover {
+    background-color: var(--tertiary);
+  }
+
+  /* Text Colors */
+  .text-primary {
+    color: var(--primary);
+  }
+  .text-secondary {
+    color: var(--secondary);
+  }
+  .text-tertiary {
+    color: var(--tertiary);
+  }
+  .text-base-text {
+    color: var(--base-text);
+  }
+  .text-subtle-text {
+    color: var(--subtle-text);
+  }
+
+  /* Hover Text Colors */
+  .hover\:text-primary:hover {
+    color: var(--primary);
+  }
+  .hover\:text-secondary:hover {
+    color: var(--secondary);
+  }
+  .hover\:text-tertiary:hover {
+    color: var(--tertiary);
+  }
+
+  /* Border Colors */
+  .border-primary {
+    border-color: var(--primary);
+  }
+  .border-secondary {
+    border-color: var(--secondary);
+  }
+  .border-border-color {
+    border-color: var(--border-color);
+  }
+
+  /* Focus Ring Color */
+  .focus\:ring-primary:focus {
+    --tw-ring-opacity: 1;
+    --tw-ring-color: var(--primary);
+    box-shadow: var(--tw-ring-inset) 0 0 0
+      calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  }
+}
+
+```
+
+### app/(main)/layout.tsx
+
+```tsx
+import type { Metadata } from "next";
+import { Poppins } from "next/font/google";
+import "./globals.css";
+
+import { ClientLayout } from "../components/ClientLayout";
+
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL("https://animae.id"),
+
+  title: "Maenews - Portal Berita Anime, Manga, & Kultur Pop Jepang",
+  description:
+    "Temukan berita terbaru, ulasan mendalam, jadwal rilis, dan sorotan dari dunia anime, manga, dan kultur pop Jepang. Sumber terpercaya untuk komunitas Animae.",
+
+  manifest: "/favicon/site.webmanifest",
+
+  keywords: [
+    "anime",
+    "manga",
+    "berita anime",
+    "ulasan anime",
+    "kultur pop jepang",
+    "komunitas animae",
+    "light novel",
+    "figur",
+    "cosplay",
+    "event jepang",
+  ],
+
+  authors: [{ name: "Tim Animae", url: "https://animae.id" }],
+  creator: "Tim Animae",
+
+  openGraph: {
+    title: "Animae - Berita Anime Terkini dan Ulasan Mendalam",
+    description:
+      "Sumber terpercaya untuk semua hal tentang anime, manga, dan kultur pop Jepang.",
+    url: "https://animae.id",
+    siteName: "Animae",
+    images: [
+      {
+        url: "/images/banner-animae.png",
+        width: 1200,
+        height: 630,
+        alt: "Banner Situs Animae",
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Animae - Portal Berita Anime & Kultur Pop Jepang",
+    description:
+      "Jelajahi berita terbaru, ulasan, dan artikel menarik dari dunia anime bersama komunitas Animae.",
+    images: ["/images/banner-animae.png"],
+  },
+
+  icons: {
+    icon: [
+      { url: "/favicon/favicon.ico" },
+      { url: "/favicon/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/favicon/apple-touch-icon.png",
+    other: [
+      {
+        rel: "android-chrome-192x192",
+        url: "/favicon/android-chrome-192x192.png",
+      },
+      {
+        rel: "android-chrome-512x512",
+        url: "/favicon/android-chrome-512x512.png",
+      },
+    ],
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className={`${poppins.variable} antialiased`}>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
+    </html>
+  );
+}
+
+```
+
+### app/(main)/page.tsx
+
+```tsx
+import dynamic from "next/dynamic";
+import { Hero } from "../components/Hero";
+import { Sidebar } from "../components/Sidebar";
+import { EventBanner } from "../components/BannerEvent";
+import { LatestNewsSection } from "../components/article/LatestNewsSection";
+import { InfiniteScrollArticles } from "../components/InfiniteScrollArticles";
+import { FeaturedRow } from "../components/FeaturedRow"; // 1. Impor komponen baru
+import {
+  getAllArticles,
+  getTrendingItems,
+  getUpcomingEvents,
+} from "../lib/api";
+import { ArticleFeed } from "../components/ArticleFeed";
+
+const SliderNews = dynamic(
+  () => import("../components/slider/SliderNews").then((mod) => mod.SliderNews),
+  {
+    loading: () => (
+      <div className="h-96 w-full rounded-lg bg-gray-200 animate-pulse" />
+    ),
+    ssr: false,
+  }
+);
+
+export default async function HomePage() {
+  const [allArticles, trendingItems, upcomingEvents] = await Promise.all([
+    getAllArticles(),
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
+
+  const featuredArticle = (allArticles ?? []).find((a) => a.featured);
+  const allNonFeatured = (allArticles ?? []).filter((a) => !a.featured);
+
+  const heroSidebarArticles = allNonFeatured.slice(0, 4);
+  const featuredRowArticles = allNonFeatured.slice(4, 8);
+  const initialLatestArticles = allNonFeatured.slice(8, 13);
+
+  const latestArticles = allNonFeatured.slice(8, 13);
+  const recommendationArticles = allNonFeatured.slice(13, 20);
+  const dynamicLoadArticles = allNonFeatured.slice(20);
+
+  return (
+    <>
+      <Hero featuredArticle={featuredArticle} articles={heroSidebarArticles} />
+
+      <FeaturedRow articles={featuredRowArticles} />
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <EventBanner events={upcomingEvents ?? []} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 flex flex-col gap-12">
+            <LatestNewsSection
+              title="Berita Terbaru"
+              articles={latestArticles}
+            />
+            <SliderNews articles={recommendationArticles} title="Rekomendasi" />
+            <InfiniteScrollArticles articlesToLoad={dynamicLoadArticles} />
+            <ArticleFeed
+              initialArticles={initialLatestArticles}
+              articlesToLoad={dynamicLoadArticles}
+            />
+          </div>
+
+          <div className="lg:col-span-1">
+            <Sidebar
+              trendingItems={trendingItems ?? []}
+              upcomingEvents={upcomingEvents ?? []}
+            />
+          </div>
+        </div>
+      </main>
+    </>
+  );
+}
+
+```
+
+### app/(main)/search/[query]/page.tsx
+
+```tsx
+import { searchArticles, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
+import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
+import { Sidebar } from "@/app/components/Sidebar";
+import { Search } from "lucide-react";
+
+type Props = {
+  params: { query: string };
+};
+
+export default async function SearchPage({ params }: Props) {
+  // Mengambil dan mendekode query pencarian dari URL
+  const query = decodeURIComponent(params.query);
+
+  // Mengambil data hasil pencarian dan data untuk sidebar
+  const [articles, trendingItems, upcomingEvents] = await Promise.all([
+    searchArticles(query),
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Kolom Kiri: Hasil Pencarian */}
+        <div className="lg:col-span-2">
+          <section>
+            {/* Judul Halaman */}
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b">
+              <Search className="w-6 h-6 text-primary" />
+              <div>
+                <p className="text-sm text-gray-500">Hasil pencarian untuk:</p>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {query}
+                </h1>
+              </div>
+            </div>
+
+            {/* Daftar Artikel atau Pesan Jika Kosong */}
+            {articles && articles.length > 0 ? (
+              <div className="flex flex-col gap-6">
+                {articles.map((article) => (
+                  <LatestNewsArticle key={article.id} article={article} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <h2 className="text-2xl font-bold text-gray-700">Tidak Ditemukan</h2>
+                <p className="text-gray-500 mt-2">
+                  Tidak ada artikel yang cocok dengan pencarian Anda. Coba kata kunci lain.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Kolom Kanan: Sidebar */}
+        <div className="lg:col-span-1">
+          <Sidebar
+            trendingItems={trendingItems ?? []}
+            upcomingEvents={upcomingEvents ?? []}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+```
+
+### app/(main)/tag/[nameTag]/page.tsx
+
+```tsx
+import { getArticlesByTag, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
+import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
+import { Sidebar } from "@/app/components/Sidebar";
+import { Hash } from "lucide-react";
+import { Article } from "@/app/types";
+
+// Tipe untuk params yang diterima oleh halaman
+type Props = {
+  params: {
+    nameTag: string;
+  };
+};
+
+// Fungsi untuk mengubah slug URL menjadi judul
+function formatTagTitle(slug: string): string {
+  return slug
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// Halaman ini adalah Server Component
+export default async function TagPage({ params }: Props) {
+  // Mengambil dan mendekode nama tag dari URL
+  const tagSlug = decodeURIComponent(params.nameTag);
+
+  // Mengambil data artikel untuk tag ini dan data untuk sidebar dari API
+  const [articles, trendingItems, upcomingEvents] = await Promise.all([
+    getArticlesByTag(tagSlug),
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
+
+  const title = formatTagTitle(tagSlug);
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Kolom Kiri: Konten Artikel Tag */}
+        <div className="lg:col-span-2">
+          <section>
+            {/* Judul Halaman Tag */}
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b">
+              <Hash className="w-6 h-6 text-primary" />
+              <h1 className="text-3xl font-bold text-gray-900">
+                Tag: {title}
+              </h1>
+            </div>
+
+            {/* Daftar Artikel atau Pesan Jika Kosong */}
+            {(articles ?? []).length > 0 ? (
+              <div className="flex flex-col gap-6">
+                {(articles as Article[]).map((article) => (
+                  <LatestNewsArticle key={article.id} article={article} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <h2 className="text-2xl font-bold text-gray-700">Oops!</h2>
+                <p className="text-gray-500 mt-2">
+                  Belum ada artikel dengan tag {title}.
+                </p>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Kolom Kanan: Sidebar */}
+        <div className="lg:col-span-1">
+          <Sidebar
+            trendingItems={trendingItems ?? []}
+            upcomingEvents={upcomingEvents ?? []}
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+```
+
+### app/components/ArticleFeed.tsx
+
+```tsx
+"use client";
+
+import { useState, useRef, useCallback } from "react";
+import { Article } from "../types";
+import { LatestNewsArticle } from "./article/LatestNewsArticle";
+import { Loader2, Flame } from "lucide-react";
+
+const ARTICLES_PER_PAGE = 5;
+
+interface ArticleFeedProps {
+  initialArticles: Article[];
+  articlesToLoad: Article[];
+}
+
+export function ArticleFeed({ initialArticles, articlesToLoad }: ArticleFeedProps) {
+  const [page, setPage] = useState(0);
+  const [loadedArticles, setLoadedArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(articlesToLoad.length > 0);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const loadMoreArticles = useCallback(() => {
+    if (isLoading || !hasMore) return;
+    setIsLoading(true);
+
+    // Simulasi jeda jaringan untuk efek loading
+    setTimeout(() => {
+      const start = page * ARTICLES_PER_PAGE;
+      const end = start + ARTICLES_PER_PAGE;
+      const newArticles = articlesToLoad.slice(start, end);
+
+      if (newArticles.length > 0) {
+        setLoadedArticles((prev) => [...prev, ...newArticles]);
+        setPage((prev) => prev + 1);
+      } else {
+        setHasMore(false);
+      }
+      setIsLoading(false);
+    }, 1000); // Jeda 1 detik
+  }, [page, isLoading, hasMore, articlesToLoad]);
+
+  const lastArticleElementRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreArticles();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore, loadMoreArticles]
+  );
+
+  return (
+    <section>
+      <div className="flex items-center gap-2 mb-4">
+        <Flame className="w-5 h-5 text-secondary" />
+        <h2 className="text-xl font-bold text-secondary">Berita Terbaru</h2>
+      </div>
+      <div className="flex flex-col gap-6">
+        {/* Menampilkan artikel awal dari server */}
+        {initialArticles.map((article) => (
+          <LatestNewsArticle key={article.id} article={article} />
+        ))}
+        {/* Menampilkan artikel yang di-load secara dinamis */}
+        {loadedArticles.map((article, index) => {
+          if (loadedArticles.length === index + 1) {
+            return (
+              <div ref={lastArticleElementRef} key={article.id}>
+                <LatestNewsArticle article={article} />
+              </div>
+            );
+          }
+          return <LatestNewsArticle key={article.id} article={article} />;
+        })}
+      </div>
+
+      {/* Indikator Loading */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-6">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <span className="ml-2 text-gray-600">Memuat lebih banyak...</span>
+        </div>
+      )}
+    </section>
+  );
+}
+
+```
+
+### app/components/ArticleViewTracker.tsx
+
+```tsx
+"use client";
+
+import { useEffect } from "react";
+import { incrementArticleView } from "@/app/lib/api";
+
+interface ArticleViewTrackerProps {
+  slug: string;
+}
+
+// Komponen ini tidak merender apa-apa, tugasnya hanya memanggil API
+export function ArticleViewTracker({ slug }: ArticleViewTrackerProps) {
+  useEffect(() => {
+    // Panggil API untuk menambah view saat komponen ini dimuat
+    incrementArticleView(slug);
+  }, [slug]); // Jalankan hanya sekali saat slug berubah
+
+  return null; // Tidak perlu merender elemen visual
+}
+
+```
+
+### app/components/BannerEvent.tsx
+
+```tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Button } from "./ui/button";
+import { Calendar, MapPin, Ticket } from "lucide-react";
+import { Event } from "@/app/types";
+import Link from "next/link";
+
+// Tipe data untuk sisa waktu
+interface TimeLeft {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+}
+
+// Komponen untuk menampilkan satu unit waktu
+const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
+  <div className="flex flex-col items-center">
+    <span className="text-3xl md:text-4xl font-bold text-white drop-shadow-md">
+      {String(value).padStart(2, "0")}
+    </span>
+    <span className="text-xs uppercase tracking-wider text-gray-200">
+      {label}
+    </span>
+  </div>
+);
+
+// Komponen sekarang menerima array 'events'
+interface EventBannerProps {
+  events?: Event[]; // Array acara, sudah diurutkan dari yang terdekat
+}
+
+export function EventBanner({ events }: EventBannerProps) {
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState<TimeLeft | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  // Menentukan acara yang sedang aktif berdasarkan indeks
+  const activeEvent = events?.[currentEventIndex];
+
+  useEffect(() => {
+    setIsClient(true);
+
+    if (!activeEvent?.date) return;
+
+    const calculateTimeLeft = (): TimeLeft | null => {
+      const eventDate = new Date(activeEvent.date);
+      const difference = +eventDate - +new Date();
+      if (difference > 0) {
+        return {
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        };
+      }
+      return null;
+    };
+
+    // Set waktu awal
+    setTimeLeft(calculateTimeLeft());
+
+    const timer = setInterval(() => {
+      const newTimeLeft = calculateTimeLeft();
+      setTimeLeft(newTimeLeft);
+
+      // LOGIKA BARU: Jika waktu habis, pindah ke event berikutnya
+      if (newTimeLeft === null) {
+        if (events && currentEventIndex < events.length - 1) {
+          setCurrentEventIndex((prevIndex) => prevIndex + 1);
+        }
+        clearInterval(timer); // Hentikan timer untuk event yang sudah lewat
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [activeEvent, events, currentEventIndex]); // Jalankan ulang efek jika acara aktif berubah
+
+  // Jika tidak ada event sama sekali, jangan render banner
+  if (!activeEvent) {
+    return null;
+  }
+
+  return (
+    <motion.section
+      className="relative rounded-2xl p-1 sm:p-2 overflow-hidden bg-gradient-to-br from-orange-500 to-red-600"
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* ... (Elemen dekoratif tetap sama) ... */}
+      <div className="absolute inset-0 overflow-hidden rounded-xl">
+        <motion.div
+          className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-white/5 rounded-full"
+          animate={{ y: [0, 20, 0], x: [0, -10, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-white/5 rounded-full"
+          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 5,
+          }}
+        />
+      </div>
+
+      <div className="relative z-10 flex flex-col items-center justify-center text-center text-white min-h-[250px] p-6">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          <h2 className="text-xl font-bold">{activeEvent.title}</h2>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-gray-200 text-sm mt-1 mb-2">
+          <MapPin className="w-4 h-4" />
+          <span>{activeEvent.location}</span>
+        </div>
+
+        {isClient && timeLeft ? (
+          <div className="flex items-center gap-4 sm:gap-8 my-4">
+            <CountdownUnit value={timeLeft.days} label="Hari" />
+            <CountdownUnit value={timeLeft.hours} label="Jam" />
+            <CountdownUnit value={timeLeft.minutes} label="Menit" />
+            <CountdownUnit value={timeLeft.seconds} label="Detik" />
+          </div>
+        ) : (
+          <p className="text-2xl font-bold my-4">
+            {isClient ? "Acara Telah Berlangsung!" : "Menghitung waktu..."}
+          </p>
+        )}
+
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Link href={`/event/${activeEvent.slug}`}>
+            <Button
+              size="lg"
+              className="cursor-pointer bg-yellow-400 hover:bg-yellow-500 rounded-full font-bold text-yellow-900 px-8 py-6 text-base"
+            >
+              <Ticket className="w-5 h-5 mr-2" />
+              Lihat Detail Event
+            </Button>
+          </Link>
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
+```
+
+### app/components/ClientLayout.tsx
+
+```tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { Header } from "./Header";
+import { Footer } from "./Footer";
+// PERBAIKAN: Menghapus impor 'useArticles' yang tidak lagi digunakan
+
+export function ClientLayout({ children }: { children: React.ReactNode }) {
+  // PERBAIKAN: Menghapus hook 'useArticles' dan 'handleSearch'
+  return (
+    <motion.div
+      className="min-h-screen bg-white"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <Header />
+      <main className="container mx-auto lg:px-[150px] md:py-4">
+        {children}
+      </main>
+      <Footer />
+    </motion.div>
+  );
+}
+
+```
+
+### app/components/EventCard.tsx
+
+```tsx
+import Link from "next/link";
+import Image from "next/image";
+import { Event } from "@/app/types";
+import { Calendar, MapPin } from "lucide-react";
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+
+interface EventCardProps {
+  event: Event;
+}
+
+export function EventCard({ event }: EventCardProps) {
+  return (
+    <Link href={`/event/${event.slug}`} className="block group bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+      <div className="relative w-full aspect-video">
+        <Image
+          src={event.imageUrl}
+          alt={event.title}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          unoptimized
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+      </div>
+      <div className="p-4">
+        <span className="text-xs font-semibold text-primary uppercase">{event.category}</span>
+        <h3 className="font-bold text-lg text-gray-800 mt-1 mb-2 line-clamp-2 group-hover:text-secondary">
+          {event.title}
+        </h3>
+        <div className="text-sm text-gray-500 space-y-1">
+            <div className="flex items-center">
+                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span>{format(new Date(event.date), "EEEE, d MMMM yyyy", { locale: id })}</span>
+            </div>
+            <div className="flex items-center">
+                <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span>{event.location}</span>
+            </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+```
+
+### app/components/FeaturedRow.tsx
+
+```tsx
+"use client";
+
+import Link from "next/link";
+import Image from "next/image";
+import { Article } from "@/app/types";
+
+// Sub-komponen untuk kartu individual di dalam baris
+function FeaturedRowCard({ article }: { article: Article }) {
+  return (
+    <Link
+      href={`/article/${article.slug}`}
+      className="block group relative rounded-lg overflow-hidden"
+    >
+      <div className="aspect-video">
+        <Image
+          src={article.imageUrl}
+          alt={article.title}
+          fill
+          unoptimized
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+        />
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 p-4">
+        <h3 className="text-white font-bold text-base leading-tight line-clamp-3">
+          {article.title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
+
+interface FeaturedRowProps {
+  articles: Article[];
+}
+
+export function FeaturedRow({ articles }: FeaturedRowProps) {
+  const displayArticles = articles.slice(0, 4);
+
+  return (
+    <section className="py-6">
+      <div className="container mx-auto px-2 md:px-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {displayArticles.map((article) => (
+            <FeaturedRowCard key={article.id} article={article} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+```
+
+### app/components/Footer.tsx
+
+```tsx
+
+import { motion } from "framer-motion";
+import { Heart } from "lucide-react";
+
+export function Footer() {
+  const footerSections = [
+    {
+      title: "AnimeFeed",
+      content: "Portal berita anime dan industri kreatif terdepan di Indonesia. Dapatkan informasi terkini seputar anime, content creators, dan event otaku."
+    },
+    {
+      title: "Kategori",
+      links: [
+        "Anime Terbaru",
+        "Content Creator", 
+        "Event & Convention",
+        "Gaming",
+        "Cosplay"
+      ]
+    },
+    {
+      title: "Ikuti Kami",
+      links: [
+        "Twitter",
+        "Instagram", 
+        "YouTube",
+        "TikTok",
+        "Discord"
+      ]
+    },
+    {
+      title: "Kontak",
+      links: [
+        "Tentang Kami",
+        "Kontak",
+        "Kebijakan Privasi", 
+        "Syarat & Ketentuan"
+      ]
+    }
+  ];
+
+  return (
+    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+      <div className="container mx-auto px-4 py-8 sm:py-12">
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          {footerSections.map((section, index) => (
+            <motion.div
+              key={section.title}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+            >
+              <h4 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-orange-400">
+                {section.title}
+              </h4>
+              
+              {section.content ? (
+                <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
+                  {section.content}
+                </p>
+              ) : (
+                <ul className="space-y-1 sm:space-y-2">
+                  {section.links?.map((link, linkIndex) => (
+                    <motion.li key={link}>
+                      <motion.a
+                        href="#"
+                        className="text-gray-300 hover:text-orange-400 transition-colors text-sm sm:text-base block"
+                        whileHover={{ x: 5 }}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: (index * 0.1) + (linkIndex * 0.05) }}
+                      >
+                        {link}
+                      </motion.a>
+                    </motion.li>
+                  ))}
+                </ul>
+              )}
+            </motion.div>
+          ))}
+        </motion.div>
+
+        <motion.div
+          className="border-t border-gray-700 pt-6 sm:pt-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <div className="flex flex-col sm:flex-row items-center justify-center mb-3 sm:mb-4 gap-2">
+            <motion.div
+              className="flex items-center text-gray-300 text-sm sm:text-base"
+              whileHover={{ scale: 1.05 }}
+            >
+              <span>Dibuat dengan</span>
+              <Heart className="w-4 h-4 mx-2 text-red-500" fill="currentColor" />
+              <span className="text-center sm:text-left">untuk komunitas anime Indonesia</span>
+            </motion.div>
+          </div>
+          
+          <p className="text-gray-400 text-xs sm:text-sm">
+            &copy; 2024 AnimeFeed. All rights reserved.
+          </p>
+        </motion.div>
+      </div>
+    </footer>
+  );
+}
+
+```
+
+### app/components/Header.tsx
+
+```tsx
+"use client";
+
+import { useState } from "react";
+import { Menu, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/app/components/ui/button";
+import { navItems } from "../data/Navigation";
+import { SearchComponent } from "./SearchComponent"; // Impor komponen pencarian
+
+// --- Sub-komponen ---
+
+const DesktopNav = () => (
+  <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+    {navItems.map((item, index) => (
+      <motion.a
+        key={item.label}
+        href={item.href}
+        className="text-white hover:text-orange-200 font-medium transition-colors relative text-sm xl:text-base"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        whileHover={{ y: -2 }}
+      >
+        {item.label}
+        <motion.div
+          className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-200"
+          style={{ scaleX: 0 }}
+          whileHover={{ scaleX: 1 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        />
+      </motion.a>
+    ))}
+  </div>
+);
+
+const MobileNav = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="lg:hidden">
+      <Button
+        onClick={() => setIsOpen(!isOpen)}
+        variant="ghost"
+        size="sm"
+        className="text-white hover:bg-orange-700 p-2"
+      >
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </Button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="absolute left-0 top-full w-full bg-gradient-to-r from-orange-600 to-orange-700 shadow-lg p-4"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex flex-col space-y-3">
+              {navItems.map((item, index) => (
+                <motion.a
+                  key={item.label}
+                  href={item.href}
+                  className="text-white hover:text-orange-200 font-medium py-2 px-4 rounded-lg hover:bg-orange-700/50 transition-colors text-sm"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.label}
+                </motion.a>
+              ))}
+              <div className="pt-3 mt-3 border-t border-orange-500">
+                <SearchComponent />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Komponen Header Utama ---
+// PERBAIKAN: Header tidak lagi menerima props
+export function Header() {
+  return (
+    <motion.header
+      className="bg-gradient-to-r from-orange-600 to-orange-700 shadow-lg sticky top-0 z-50"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    >
+      <div className="container mx-auto flex items-center justify-between px-4 lg:px-[150px] py-3 sm:py-4">
+        <motion.a
+          href="/"
+          className="text-xl sm:text-2xl font-bold text-white hover:text-orange-200 transition-colors"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          MaeNews
+        </motion.a>
+
+        <DesktopNav />
+
+        <div className="hidden lg:flex w-56">
+          <SearchComponent />
+        </div>
+
+        <MobileNav />
+      </div>
+    </motion.header>
+  );
+}
+
+```
+
+### app/components/Hero.tsx
+
+```tsx
+"use client";
+
+import { useState, useMemo } from "react";
+import { motion, PanInfo } from "framer-motion";
+import { HeroCard } from "./HeroCard";
+import { Article } from "@/app/types";
+
+const gridLayoutClasses = [
+  "md:col-span-2 md:row-span-2",
+  "md:col-span-1 md:row-span-2",
+  "md:col-span-1",
+  "md:col-span-1",
+];
+
+type HeroProps = {
+  featuredArticle?: Article;
+  articles: Article[];
+};
+
+export const Hero: React.FC<HeroProps> = ({ featuredArticle, articles }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Gunakan hanya artikel dari props
+  const heroDisplayArticles: Article[] = useMemo(() => {
+    const slicedArticles = articles.slice(0, 3);
+    return [featuredArticle, ...slicedArticles].filter(
+      (article): article is Article => article !== undefined
+    );
+  }, [featuredArticle, articles]);
+
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
+    const swipeThreshold = 50;
+    if (info.offset.x < -swipeThreshold) {
+      setActiveIndex((prev) =>
+        Math.min(prev + 1, heroDisplayArticles.length - 1)
+      );
+    } else if (info.offset.x > swipeThreshold) {
+      setActiveIndex((prev) => Math.max(prev - 1, 0));
+    }
+  };
+
+  return (
+    <section className="container mx-auto py-3 sm:py-6">
+      {/* Mobile Slider */}
+      <div className="md:hidden">
+        <div className="relative overflow-hidden">
+          <motion.div
+            className="flex"
+            animate={{ x: `-${activeIndex * 100}%` }}
+            transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.1}
+            onDragEnd={handleDragEnd}
+          >
+            {heroDisplayArticles.map((article) => (
+              <div key={article.id} className="flex-shrink-0 w-full">
+                <HeroCard article={article} />
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        {/* Dots Indicator */}
+        <div className="flex justify-center gap-2 mt-6">
+          {heroDisplayArticles.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={`h-2.5 w-2.5 rounded-full transition-all duration-300 ease-in-out ${
+                i === activeIndex
+                  ? "w-6 bg-primary hover:bg-primary/80"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop Grid */}
+      <div className="hidden md:grid md:grid-cols-4 md:grid-rows-2 gap-4 h-auto md:h-[550px]">
+        {heroDisplayArticles.map((article, index) => (
+          <HeroCard
+            key={article.id}
+            article={article}
+            className={gridLayoutClasses[index]}
+          />
+        ))}
+      </div>
+    </section>
+  );
+};
+
+```
+
+### app/components/HeroCard.tsx
+
+```tsx
+import Link from "next/link";
+import { Article } from "@/app/types";
+import Image from "next/image"; // Impor komponen Image
+
+interface HeroCardProps {
+  article: Article;
+  className?: string;
+}
+
+export function HeroCard({ article, className }: HeroCardProps) {
+  const categoryStyles: { [key: string]: string } = {
+    Anime: "bg-secondary hover:bg-primary",
+    "Content Creator": "bg-secondary hover:bg-primary",
+    Event: "bg-secondary hover:bg-primary",
+    Gaming: "bg-secondary hover:bg-primary",
+    Cosplay: "bg-secondary hover:bg-primary",
+    Japanese: "bg-secondary hover:bg-primary",
+    default: "bg-secondary hover:bg-primary",
+  };
+
+  return (
+    // PERBAIKAN: Menggunakan article.slug dan path yang benar (/article/)
+    <Link
+      href={`/article/${article.slug}`}
+      className={`${className} relative md:rounded-2xl overflow-hidden group cursor-pointer h-64 md:h-auto shadow-lg block`}
+    >
+      {/* PERBAIKAN: Menggunakan komponen Image dari Next.js untuk optimasi */}
+      <Image
+        src={article.imageUrl}
+        alt={article.title}
+        fill
+        unoptimized
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+      <div className="absolute bottom-0 left-0 p-5 sm:p-6 text-white w-full flex flex-col items-start">
+        <span
+          className={`text-xs font-semibold uppercase px-3 py-1.5 rounded-full mb-3 transition-colors duration-300 ${
+            categoryStyles[article.category] || categoryStyles.default
+          }`}
+        >
+          {article.category}
+        </span>
+        <h3 className="text-lg sm:text-xl font-bold leading-tight drop-shadow-md text-balance">
+          {article.title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
+
+```
+
+### app/components/HeroSidebarItem.tsx
+
+```tsx
+import Link from "next/link";
+import Image from "next/image";
+import { Article } from "@/app/types";
+
+interface HeroSidebarItemProps {
+  article: Article;
+}
+
+export function HeroSidebarItem({ article }: HeroSidebarItemProps) {
+  return (
+    <Link href={`/article/${article.slug}`} className="block group">
+      <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-700/50 transition-colors duration-200">
+        <div className="relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden">
+          <Image
+            src={article.imageUrl}
+            alt={article.title}
+            fill
+            sizes="80px"
+            unoptimized
+            className="object-cover"
+          />
+        </div>
+        <h3 className="text-sm font-semibold text-gray-300 group-hover:text-white transition-colors line-clamp-3">
+          {article.title}
+        </h3>
+      </div>
+    </Link>
+  );
+}
+
+```
+
+### app/components/InfiniteScrollArticles.tsx
+
+```tsx
+"use client";
+
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Article } from "../types";
+import { LatestNewsArticle } from "./article/LatestNewsArticle";
+import { Loader2 } from "lucide-react";
+
+const ARTICLES_PER_PAGE = 5;
+
+interface InfiniteScrollArticlesProps {
+  articlesToLoad: Article[];
+}
+
+export function InfiniteScrollArticles({
+  articlesToLoad,
+}: InfiniteScrollArticlesProps) {
+  const [page, setPage] = useState(0);
+  const [loadedArticles, setLoadedArticles] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(articlesToLoad.length > 0);
+
+  const observer = useRef<IntersectionObserver | null>(null);
+
+  const loadMoreArticles = useCallback(() => {
+    if (isLoading || !hasMore) return;
+    setIsLoading(true);
+
+    // Simulasi jeda jaringan untuk efek loading
+    setTimeout(() => {
+      const start = page * ARTICLES_PER_PAGE;
+      const end = start + ARTICLES_PER_PAGE;
+      const newArticles = articlesToLoad.slice(start, end);
+
+      if (newArticles.length > 0) {
+        setLoadedArticles((prev) => [...prev, ...newArticles]);
+        setPage((prev) => prev + 1);
+      } else {
+        setHasMore(false);
+      }
+      setIsLoading(false);
+    }, 1000);
+  }, [page, isLoading, hasMore, articlesToLoad]);
+
+  useEffect(() => {
+    loadMoreArticles();
+  }, [loadMoreArticles]);
+
+  const lastArticleElementRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (isLoading) return;
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          loadMoreArticles();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [isLoading, hasMore, loadMoreArticles]
+  );
+
+  return (
+    <>
+      <div className="flex flex-col gap-6">
+        {loadedArticles.map((article, index) => {
+          // Tambahkan ref ke elemen terakhir untuk memicu load more
+          if (loadedArticles.length === index + 1) {
+            return (
+              <div ref={lastArticleElementRef} key={article.id}>
+                <LatestNewsArticle article={article} />
+              </div>
+            );
+          }
+          return <LatestNewsArticle key={article.id} article={article} />;
+        })}
+      </div>
+
+      {/* Indikator Loading */}
+      {isLoading && (
+        <div className="flex justify-center items-center py-6">
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          <span className="ml-2 text-gray-600">Memuat lebih banyak...</span>
+        </div>
+      )}
+    </>
+  );
+}
+
+```
+
+### app/components/NewsCard.tsx
+
+```tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { Clock } from "lucide-react";
+import { Article } from "../types";
+import { formatRelativeTime } from "../utils/dateUtils";
+import Link from "next/link";
+import Image from "next/image";
+
+interface NewsCardProps {
+  article: Article;
+  index: number;
+}
+
+export function NewsCard({ article, index }: NewsCardProps) {
+  return (
+    // PERBAIKAN: Seluruh kartu dibungkus oleh satu Link dengan kelas 'group'
+    <Link href={`/article/${article.slug}`} className="block group h-full">
+      <motion.div
+        className="flex flex-col h-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05, duration: 0.4 }}
+      >
+        {/* Kontainer Gambar */}
+        <div className="relative overflow-hidden rounded-xl aspect-video mb-3">
+          <Image
+            width={400}
+            height={225}
+            src={article.imageUrl}
+            alt={article.title}
+            unoptimized 
+            className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+          />
+        </div>
+
+        {/* Konten Teks */}
+        <div className="flex flex-col flex-grow">
+          <motion.h3
+            className="font-bold text-gray-800 leading-tight line-clamp-3 transition-colors group-hover:text-secondary text-base md:text-md mb-2"
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            {article.title}
+          </motion.h3>
+          <div className="flex items-center text-gray-500 text-xs mt-auto pt-2">
+            <Clock className="w-3.5 h-3.5 mr-1.5" />
+            <span>{formatRelativeTime(article.publishedAt)}</span>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
+```
+
+### app/components/NewsGrid.tsx
+
+```tsx
+
+import { motion } from "framer-motion";
+import { Article } from "../types";
+import { NewsCard } from "./NewsCard";
+
+interface NewsGridProps {
+  articles: Article[];
+}
+
+export function NewsGrid({ articles }: NewsGridProps) {
+  return (
+    <section className="py-6 sm:py-8 md:py-12">
+      <div className="container mx-auto px-4">
+        <motion.h2 
+          className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          Berita Terbaru
+        </motion.h2>
+          
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          {articles.map((article, index) => (
+            <NewsCard key={article.id} article={article} index={index} />
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+```
+
+### app/components/SearchComponent.tsx
+
+```tsx
+"use client";
+
+import { useState, KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
+import { Input } from "@/app/components/ui/input";
+
+export function SearchComponent() {
+  const [query, setQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = () => {
+    if (query.trim()) {
+      // Mengarahkan pengguna ke halaman hasil pencarian dengan query yang di-encode
+      router.push(`/search/${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="relative w-full">
+      <Input
+        type="search"
+        placeholder="Cari berita..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        onKeyPress={handleKeyPress}
+        className="w-full bg-white/90 border-none rounded-full pl-4 pr-12 text-sm"
+      />
+      <Button
+        size="sm"
+        onClick={handleSearch}
+        className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-orange-500 hover:bg-orange-600 rounded-full w-8 h-8 p-0"
+      >
+        <Search className="w-4 h-4 text-white" />
+      </Button>
+    </div>
+  );
+}
+
+```
+
+### app/components/Sidebar.tsx
+
+```tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { TrendingUp, Calendar, MapPin } from "lucide-react";
+import { TrendingItem, Event } from "../types";
+import { formatRelativeTime } from "../utils/dateUtils";
+import Link from "next/link";
+import Image from "next/image";
+
+interface SidebarProps {
+  trendingItems: TrendingItem[];
+  upcomingEvents: Event[];
+}
+
+export function Sidebar({ trendingItems, upcomingEvents }: SidebarProps) {
+  return (
+    <aside className="hidden lg:block sticky top-24 space-y-6">
+      {/* Trending Section */}
+      <motion.div
+        className="bg-white rounded-2xl p-5 shadow-sm"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <div className="flex items-center mb-4">
+          <TrendingUp className="w-5 h-5 text-secondary mr-2" />
+          <h3 className="text-lg font-bold text-gray-900">Trending Sekarang</h3>
+        </div>
+
+        <div className="space-y-4">
+          {trendingItems.slice(0, 5).map((item, index) => (
+            <Link
+              href={`/article/${item.slug}`}
+              key={item.id}
+              className="block group"
+            >
+              <motion.div
+                className="flex gap-4 p-2 rounded-xl hover:bg-orange-50 transition-colors"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                whileHover={{ x: 5 }}
+              >
+                <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden">
+                  <Image
+                    src={`https://placehold.co/100x100/ffedd5/fb923c?text=${item.category.charAt(
+                      0
+                    )}`}
+                    alt={item.title}
+                    width={64}
+                    height={64}
+                    unoptimized
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-800 text-sm mb-1 group-hover:text-orange-600 transition-colors line-clamp-2">
+                    {item.title}
+                  </h4>
+                  <p className="text-gray-500 text-xs">
+                    {formatRelativeTime(item.publishedAt)}
+                  </p>
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Upcoming Events */}
+      <motion.div
+        className="bg-white rounded-2xl p-5 shadow-sm"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <div className="flex items-center mb-4">
+          <Calendar className="w-5 h-5 text-secondary mr-2" />
+          <h3 className="text-lg font-bold text-gray-900">Event Mendatang</h3>
+        </div>
+
+        <div className="space-y-4">
+          {upcomingEvents.slice(0, 5).map((event, index) => (
+            // PERBAIKAN: href sekarang menggunakan event.slug
+            <Link
+              href={`/event/${event.slug}`}
+              key={event.id}
+              className="block group"
+            >
+              <motion.div
+                className="flex gap-4 p-2 rounded-xl hover:bg-orange-50 transition-colors"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                whileHover={{ x: 5 }}
+              >
+                <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden">
+                  <Image
+                    src={
+                      event.imageUrl ||
+                      `https://placehold.co/100x100/f3e8ff/c084fc?text=Event`
+                    }
+                    alt={event.title}
+                    width={64}
+                    height={64}
+                    unoptimized
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-800 text-sm mb-1 group-hover:text-orange-600 transition-colors line-clamp-2">
+                    {event.title}
+                  </h4>
+                  <div className="flex items-center text-gray-500 text-xs">
+                    <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
+                    <span className="truncate">{event.location}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+      </motion.div>
+    </aside>
+  );
+}
+
+```
+
+### app/components/article/ArticleDetail.tsx
+
+```tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { Article } from "@/app/types";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { User, Clock, Tag } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Badge } from "../ui/badge";
+import { slugify } from "@/app/lib/utils";
+
+interface ArticleDetailProps {
+  article: Article;
+}
+
+export function ArticleDetail({ article }: ArticleDetailProps) {
+  const formattedDate = article.publishedAt
+    ? format(new Date(article.publishedAt), "d MMMM yyyy", { locale: id })
+    : "Tanggal tidak tersedia";
+
+  return (
+    <motion.div
+      className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Kategori */}
+      <Badge
+        variant="secondary"
+        className="mb-4 bg-secondary text-white hover:bg-secondary/20 font-semibold"
+      >
+        {article.category}
+      </Badge>
+
+      {/* Judul Artikel */}
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight mb-4">
+        {article.title}
+      </h1>
+
+      {/* Meta Info (Author & Tanggal) */}
+      <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-gray-500 mb-6">
+        <div className="flex items-center text-sm">
+          <User className="w-4 h-4 mr-2 text-secondary" />
+          <span className="font-medium text-secondary">{article.author}</span>
+        </div>
+        <div className="flex items-center text-sm">
+          <Clock className="w-4 h-4 mr-2" />
+          <span>{formattedDate}</span>
+        </div>
+      </div>
+
+      {/* Gambar Utama */}
+      <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-6">
+        <Image
+          src={article.imageUrl}
+          alt={article.title}
+          fill
+          unoptimized
+          sizes="(max-width: 1024px) 100vw, 66vw"
+          className="object-cover"
+        />
+      </div>
+
+      {/* Konten Artikel */}
+      <div className="prose prose-lg max-w-none text-gray-700">
+        <p className="lead font-semibold">{article.excerpt}</p>
+        <p>{article.description}</p>
+      </div>
+
+      {/* Tags */}
+      {article.tags && article.tags.length > 0 && (
+        <div className="mt-8 pt-6 border-t">
+          <div className="flex items-center flex-wrap gap-2">
+            <Tag className="w-4 h-4 text-gray-400" />
+            {article.tags.map((tag) => (
+              <Link key={tag} href={`/tag/${slugify(tag)}`}>
+                <Badge
+                  variant="outline"
+                  className="cursor-pointer hover:bg-white hover:text-secondary bg-secondary text-white transition-colors"
+                >
+                  {tag}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+```
+
+### app/components/article/LatestNewsArticle.tsx
+
+```tsx
+"use client";
+
+import { motion } from "framer-motion";
+import { Clock, User } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { Article } from "@/app/types";
+import { formatRelativeTime } from "@/app/utils/dateUtils";
+
+interface LatestNewsArticleProps {
+  article: Article;
+}
+
+export function LatestNewsArticle({ article }: LatestNewsArticleProps) {
+  return (
+    // Seluruh kartu sekarang dibungkus oleh SATU Link dengan kelas 'group'
+    <Link href={`/article/${article.slug}`} className="block group">
+      <motion.article
+        // Gaya responsif tetap sama
+        className="flex flex-row-reverse sm:flex-row items-center gap-4 p-4 bg-white rounded-lg shadow-sm 
+                   sm:items-start sm:p-0 sm:bg-transparent sm:shadow-none sm:gap-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Gambar Artikel (Link terpisah DIHAPUS) */}
+        <div className="flex-shrink-0">
+          <div className="w-34 h-24 md:h-34 sm:w-56 md:w-64">
+            <Image
+              src={
+                article.imageUrl ||
+                "https://placehold.co/400x300/e2e8f0/64748b?text=Img"
+              }
+              alt={article.title}
+              width={256}
+              height={170}
+              unoptimized 
+              className="w-full h-full object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        </div>
+
+        {/* Konten Teks Artikel */}
+        <div className="flex-1">
+          {/* Judul (Link terpisah DIHAPUS) */}
+          <motion.h2
+            // Menggunakan 'group-hover' untuk mengubah warna saat seluruh kartu di-hover
+            className="text-base md:text-lg font-bold text-gray-800 hover:text-secondary group-hover:text-secondary leading-tight mb-2 line-clamp-3 transition-colors duration-200"
+            whileHover={{ y: -2 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
+            {article.title}
+          </motion.h2>
+
+          {/* Meta Info */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
+            <div className="flex items-center">
+              <User className="w-4 h-4 mr-1.5 text-red-500" />
+              <span className="font-bold text-red-600">{article.category}</span>
+            </div>
+            <div className="flex items-center gap-x-4">
+              <div className="flex items-center">
+                <Clock className="w-4 h-4 mr-1.5" />
+                <span>{formatRelativeTime(article.publishedAt)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Excerpt hanya tampil di desktop */}
+          <p className="hidden sm:block text-gray-600 text-sm leading-relaxed line-clamp-2">
+            {article.excerpt}
+          </p>
+        </div>
+      </motion.article>
+    </Link>
+  );
+}
+
+```
+
+### app/components/article/LatestNewsSection.tsx
+
+```tsx
+"use client";
+
+import { Article } from "../../types";
+import { LatestNewsArticle } from "./LatestNewsArticle";
+import { Flame } from "lucide-react";
+
+interface LatestNewsSectionProps {
+  articles: Article[];
+  title?: string; // Judul sekarang bersifat opsional
+}
+
+export function LatestNewsSection({ title, articles }: LatestNewsSectionProps) {
+  return (
+    <section>
+      {/* Judul hanya akan ditampilkan jika prop 'title' diberikan */}
+      {title && (
+        <div className="flex items-center gap-2 mb-4">
+          <Flame className="w-5 h-5 text-secondary" />
+          <h2 className="text-xl font-bold text-secondary">{title}</h2>
+        </div>
+      )}
+      <div className="flex flex-col gap-6">
+        {articles.map((article) => (
+          <LatestNewsArticle key={article.id} article={article} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+```
+
+### app/components/slider/SliderNews.tsx
+
+```tsx
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Article } from "../../types"; // Pastikan path ini benar
+import { NewsCard } from "../NewsCard"; // Menggunakan NewsCard yang sudah diperbarui
+import { Flame } from "lucide-react"; // Menggunakan ikon baru untuk judul
+
+interface SliderNewsProps {
+  articles: Article[];
+  title: string;
+}
+
+export function SliderNews({ articles, title }: SliderNewsProps) {
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!isHovered && sliderRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = sliderRef.current;
+        const cardWidth = sliderRef.current.children[0]?.clientWidth || 0;
+        const gap = 16;
+
+        let newScrollLeft = scrollLeft + cardWidth + gap;
+
+        if (newScrollLeft >= scrollWidth - clientWidth) {
+          newScrollLeft = 0;
+        }
+
+        sliderRef.current.scrollTo({
+          left: newScrollLeft,
+          behavior: "smooth",
+        });
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isHovered]);
+
+  return (
+    <section>
+      {/* Judul Section yang Disesuaikan */}
+      <div className="flex items-center gap-2 mb-4">
+        <Flame className="w-5 h-5 text-secondary" />
+        <h2 className="text-xl font-bold text-secondary">{title}</h2>
+      </div>
+
+      {/* Kontainer Slider dengan Snap dan Autoplay */}
+      <div
+        ref={sliderRef}
+        className="flex space-x-4 sm:space-x-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {articles.map((article, index) => (
+          <div
+            key={article.id}
+            className="w-[240px] sm:w-[280px] flex-shrink-0 snap-start"
+          >
+            <NewsCard article={article} index={index} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+```
+
+### app/components/ui/badge.tsx
+
+```tsx
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "../../lib/utils"
+
+const badgeVariants = cva(
+  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        default:
+          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+        secondary:
+          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        destructive:
+          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
+        outline: "text-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+function Badge({ className, variant, children, ...props }: BadgeProps) {
+  return (
+    <div className={cn(badgeVariants({ variant }), className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+export { Badge, badgeVariants }
+
+```
+
+### app/components/ui/button.tsx
+
+```tsx
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "../../lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
+}
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
+
+export { Button, buttonVariants }
+
+```
+
+### app/components/ui/input.tsx
+
+```tsx
+import * as React from "react"
+
+import { cn } from "../../lib/utils"
+
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className={cn(
+          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Input.displayName = "Input"
+
+export { Input }
+
+```
+
+### app/data/Navigation.ts
+
+```ts
+export interface NavItem {
+  label: string;
+  href: string;
+}
+
+// PERBAIKAN: href sekarang menunjuk ke path kategori yang dinamis
+export const navItems: NavItem[] = [
+  { label: "Anime", href: "/category/anime" },
+  { label: "Creator", href: "/category/content-creator" },
+  { label: "Event", href: "/event" },
+  { label: "Gaming", href: "/category/gaming" },
+  { label: "Cosplay", href: "/category/cosplay" },
+  { label: "Gallery", href: "/gallery" },
+];
+
+```
+
+### app/data/mockData.ts
+
+```ts
+// app/data/mockData.ts
+
+import { Article, TrendingItem, Event } from "@/app/types";
+
+export const featuredArticle: Article = {
+  id: "0",
+  title: "Attack on Titan Final Season: Pengumuman Tanggal Rilis Episode Terakhir",
+  excerpt: "Studio WIT dan MAPPA mengumumkan jadwal resmi untuk episode final...",
+  description: "Deskripsi lengkap untuk Attack on Titan...",
+  category: "Anime",
+  author: "Admin",
+  publishedAt: "2025-07-31T12:30:00Z",
+  imageUrl: "https://placehold.co/1200x800/1E293B/FFFFFF?text=Attack+on+Titan",
+  tags: ["Attack on Titan", "Final Season", "MAPPA"],
+  featured: true,
+  views: 999,
+  slug: "attack-on-titan-final-season-pengumuman-tanggal-rilis-episode-terakhir",
+};
+
+export const mockArticles: Article[] = [
+  {
+    id: "1",
+    title: "Studio Ghibli Umumkan Proyek Anime Terbaru untuk 2026",
+    excerpt: "Miyazaki kembali dengan karya masterpiece...",
+    description: "Deskripsi lengkap untuk Studio Ghibli...",
+    category: "Anime",
+    author: "Redaksi AnimeFeed",
+    publishedAt: "2025-07-30T10:30:00Z",
+    imageUrl: "https://placehold.co/600x400/1E293B/FFFFFF?text=Ghibli+News",
+    tags: ["Studio Ghibli", "Miyazaki", "Anime Movie"],
+    featured: false,
+    views: 876,
+    slug: "studio-ghibli-umumkan-proyek-anime-terbaru-untuk-2026",
+  },
+  {
+    id: "2",
+    title: "VTuber Kobo Kanaeru Pecahkan Rekor Subscribers Terbaru",
+    excerpt: "Content creator Hololive Indonesia ini berhasil...",
+    description: "Deskripsi lengkap untuk Kobo Kanaeru...",
+    category: "Content Creator",
+    author: "Tim Reporter",
+    publishedAt: "2025-07-29T08:45:00Z",
+    imageUrl: "https://placehold.co/600x400/4C1D95/FFFFFF?text=Kobo+Kanaeru",
+    tags: ["VTuber", "Hololive", "Kobo Kanaeru"],
+    featured: false,
+    views: 1234,
+    slug: "vtuber-kobo-kanaeru-pecahkan-rekor-subscribers-terbaru",
+  },
+  // ... (tambahkan artikel lain dengan id string)
+];
+
+export const trendingItems: TrendingItem[] = [
+  {
+    id: "trending-1",
+    title: "Demon Slayer Season 4 Dikonfirmasi",
+    description: "Studio Ufotable mengumumkan...",
+    category: "Anime",
+    publishedAt: "2025-07-30T10:00:00Z",
+    slug: "demon-slayer-season-4-dikonfirmasi",
+  },
+  {
+    id: "trending-2",
+    title: "Content Creator Terbaru dari Hololive",
+    description: "Generasi baru VTuber debut...",
+    category: "Content Creator",
+    publishedAt: "2025-07-29T08:00:00Z",
+    slug: "content-creator-terbaru-dari-hololive",
+  },
+];
+
+export const upcomingEvents: Event[] = [
+  {
+    id: "event-1",
+    title: "Comic Frontier 17",
+    location: "ICE BSD, Tangerang",
+    date: "2025-09-06T10:00:00Z",
+    category: "Convention",
+    description: "Event doujin dan indie creator terbesar",
+    imageUrl: "https://placehold.co/400x300/7C2D12/FFFFFF?text=Comifuro",
+    slug: "comic-frontier-17",
+  },
+  {
+    id: "event-2",
+    title: "Indonesia Comic Con 2025",
+    location: "Jakarta Convention Center",
+    date: "2025-11-01T10:00:00Z",
+    category: "Pop Culture",
+    description: "Festival pop culture terbesar di Indonesia",
+    imageUrl: "https://placehold.co/400x300/BE185D/FFFFFF?text=ICC+2025",
+    slug: "indonesia-comic-con-2025",
+  },
+];
+
+```
+
+### app/hooks/use-mobile.tsx
+
+```tsx
+import * as React from "react"
+
+const MOBILE_BREAKPOINT = 768
+
+export function useIsMobile() {
+  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
+    const onChange = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    }
+    mql.addEventListener("change", onChange)
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    return () => mql.removeEventListener("change", onChange)
+  }, [])
+
+  return !!isMobile
+}
+
+```
+
+### app/hooks/useArticles.ts
+
+```ts
+"use client";
+
+import { useState, useEffect } from "react";
+import { Article } from "../types";
+import { mockArticles } from "../data/mockData";
+
+export function useArticles() {
+  const [articles] = useState<Article[]>(mockArticles);
+  const [filteredArticles, setFilteredArticles] = useState<Article[]>(mockArticles);
+  const [activeCategory, setActiveCategory] = useState("Semua");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    let filtered = articles;
+
+    // Filter by category
+    if (activeCategory !== "Semua") {
+      filtered = filtered.filter(article => article.category === activeCategory);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(article =>
+        article.title.toLowerCase().includes(query) ||
+        article.excerpt.toLowerCase().includes(query) ||
+        article.tags.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+
+    setFilteredArticles(filtered);
+  }, [articles, activeCategory, searchQuery]);
+
+  const handleCategoryChange = (category: string) => {
+    setActiveCategory(category);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  return {
+    articles: filteredArticles,
+    activeCategory,
+    handleCategoryChange,
+    handleSearch
+  };
+}
+
+```
+
+### app/lib/api.ts
+
+```ts
+// app/lib/api.ts
+
+import { Article, TrendingItem, Event } from "@/app/types";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://golang-maenews-animae-id2569-ksgm0g96.leapcell.dev/api/v1";
+
+async function fetchAPI<T>(endpoint: string): Promise<T | null> {
+  try {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      cache: 'no-cache', 
+    });
+
+    if (!res.ok) {
+      console.error(`API Error on ${endpoint}: ${res.statusText}`);
+      return null;
+    }
+    return res.json() as Promise<T>;
+  } catch (error) {
+    console.error("API Fetch Error:", error);
+    return null; 
+  }
+}
+
+// FUNGSI BARU: untuk menambah view count
+export const incrementArticleView = (slug: string) => {
+  // Kita tidak perlu menunggu respons, jadi kita kirim dan lupakan (fire-and-forget)
+  fetch(`${API_BASE_URL}/articles/${slug}/view`, {
+    method: 'POST',
+  });
+};
+
+// --- Fungsi untuk mengambil data ---
+
+export const getAllArticles = () => fetchAPI<Article[]>('/articles');
+export const getArticleBySlug = (slug: string) => fetchAPI<Article>(`/articles/${slug}`);
+export const getArticlesByCategory = (categoryName: string) => fetchAPI<Article[]>(`/category/${categoryName}`);
+export const getArticlesByTag = (tagName: string) => fetchAPI<Article[]>(`/tag/${tagName}`);
+export const getTrendingItems = () => fetchAPI<TrendingItem[]>('/trending');
+export const getUpcomingEvents = () => fetchAPI<Event[]>('/events/upcoming');
+export const getEventBySlug = (slug: string) => fetchAPI<Event>(`/events/${slug}`);
+export const searchArticles = (query: string) => fetchAPI<Article[]>(`/search/${query}`);
+```
+
+### app/lib/utils.ts
+
+```ts
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+export const slugify = (text: string) => {
+  if (!text) return '';
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/\s+/g, '-')          
+    .replace(/[^\w\-]+/g, '')     
+    .replace(/\-\-+/g, '-')        
+    .replace(/^-+/, '')            
+    .replace(/-+$/, '');           
+};
+
+```
+
+### app/types/index.ts
+
+```ts
+// app/types/index.ts
+
+export interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  description: string;
+  category: string;
+  author: string;
+  publishedAt: string;
+  imageUrl: string;
+  tags: string[];
+  featured: boolean;
+  views: number;
+}
+
+export interface TrendingItem {
+  id: string;
+  title: string;
+  description: string;
+  slug: string;
+  category: string;
+  publishedAt: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  slug: string;
+  location: string;
+  date: string;
+  category: string;
+  description: string;
+  imageUrl: string;
+}
+
+```
+
+### app/utils/dateUtils.ts
+
+```ts
+
+export function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  
+  if (hours < 1) {
+    const minutes = Math.floor(diff / (1000 * 60));
+    return `${minutes} menit yang lalu`;
+  } else if (hours < 24) {
+    return `${hours} jam yang lalu`;
+  } else {
+    const days = Math.floor(hours / 24);
+    return `${days} hari yang lalu`;
+  }
+}
+
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+```
+

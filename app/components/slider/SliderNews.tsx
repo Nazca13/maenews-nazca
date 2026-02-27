@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Article } from "../../types"; // Pastikan path ini benar
+import { Article } from "@/app/typing"; // Pastikan path ini benar
 import { NewsCard } from "../NewsCard"; // Menggunakan NewsCard yang sudah diperbarui
 import { Flame } from "lucide-react"; // Menggunakan ikon baru untuk judul
 

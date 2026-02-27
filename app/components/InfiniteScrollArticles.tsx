@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Article } from "../types";
+import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "./article/LatestNewsArticle";
 import { Loader2 } from "lucide-react";
 

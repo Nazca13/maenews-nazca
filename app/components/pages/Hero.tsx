@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { motion, PanInfo } from "framer-motion";
-import { HeroCard } from "./HeroCard";
-import { Article } from "@/app/types";
+import { HeroCard } from "@/app/components/HeroCard";
+import { Article } from "@/app/typing";
 
 const gridLayoutClasses = [
   "md:col-span-2 md:row-span-2",

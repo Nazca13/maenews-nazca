@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Article } from "@/app/types";
+import { Article } from "@/app/typing";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { User, Clock, Tag } from "lucide-react";

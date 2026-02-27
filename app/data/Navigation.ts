@@ -1,9 +1,8 @@
-export interface NavItem {
-  label: string;
-  href: string;
-}
+// app/data/Navigation.ts
 
-// PERBAIKAN: href sekarang menunjuk ke path kategori yang dinamis
+import { NavItem } from "@/app/typing";
+
+// href menunjuk ke path kategori yang dinamis
 export const navItems: NavItem[] = [
   { label: "Anime", href: "/category/anime" },
   { label: "Creator", href: "/category/content-creator" },

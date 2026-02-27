@@ -1,8 +1,8 @@
 import { getArticlesByTag, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
-import { Sidebar } from "@/app/components/Sidebar";
+import { Sidebar } from "@/app/components/layout/Sidebar";
 import { Hash } from "lucide-react";
-import { Article } from "@/app/types";
+import { Article } from "@/app/typing";
 
 // Tipe untuk params yang diterima oleh halaman
 type Props = {

@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { TrendingUp, Calendar, MapPin } from "lucide-react";
-import { TrendingItem, Event } from "../types";
-import { formatRelativeTime } from "../utils/dateUtils";
+import { TrendingItem, Event } from "@/app/typing";
+import { formatRelativeTime } from "@/app/utils/dateUtils";
 import Link from "next/link";
 import Image from "next/image";
 

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Clock } from "lucide-react";
-import { Article } from "../types";
+import { Article } from "@/app/typing";
 import { formatRelativeTime } from "../utils/dateUtils";
 import Link from "next/link";
 import Image from "next/image";

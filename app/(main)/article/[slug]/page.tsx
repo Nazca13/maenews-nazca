@@ -1,6 +1,6 @@
 import { getArticleBySlug, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
 import { ArticleDetail } from "@/app/components/article/ArticleDetail";
-import { Sidebar } from "@/app/components/Sidebar";
+import { Sidebar } from "@/app/components/layout/Sidebar";
 import { notFound } from "next/navigation";
 import { ArticleViewTracker } from "@/app/components/ArticleViewTracker"; // Impor pemicu
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Article } from "@/app/types";
+import { Article } from "@/app/typing";
 
 interface HeroSidebarItemProps {
   article: Article;

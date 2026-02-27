@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Article } from "@/app/types";
+import { Article } from "@/app/typing";
 import Image from "next/image"; // Impor komponen Image
 
 interface HeroCardProps {

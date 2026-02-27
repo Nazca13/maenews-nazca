@@ -1,6 +1,6 @@
 import { searchArticles, getTrendingItems, getUpcomingEvents } from "@/app/lib/api";
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
-import { Sidebar } from "@/app/components/Sidebar";
+import { Sidebar } from "@/app/components/layout/Sidebar";
 import { Search } from "lucide-react";
 
 type Props = {
