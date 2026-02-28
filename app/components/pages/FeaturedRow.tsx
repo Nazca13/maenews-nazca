@@ -13,7 +13,7 @@ function FeaturedRowCard({ article }: { article: Article }) {
     >
       <div className="aspect-video">
         <Image
-          src={article.imageUrl}
+          src={article.thumbnailUrl || article.imageUrl || ""}
           alt={article.title}
           fill
           unoptimized

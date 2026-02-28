@@ -7,8 +7,8 @@
 export {
   featuredArticle,
   mockArticles,
-} from "./mocks/articles";
+} from "./mocks-data/mockArticles";
 
-export { trendingItems } from "./mocks/trending";
+export { trendingItems } from "./mocks-data/mockTrending";
 
-export { upcomingEvents } from "./mocks/events";
+export { upcomingEvents } from "./mocks-data/mockEvents";

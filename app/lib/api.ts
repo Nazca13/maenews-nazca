@@ -11,7 +11,7 @@ import {
   mockArticles,
   trendingItems,
   upcomingEvents,
-} from "@/app/data/mocks";
+} from "@/app/data/mocks-data";
 
 // --------------- Configuration ---------------
 

@@ -1,113 +1,98 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/app/components/ui/button";
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Menu, X, Search } from "lucide-react";
 import { navItems } from "@/app/data/Navigation";
-import { SearchComponent } from "@/app/components/SearchComponent"; // Impor komponen pencarian
+import { Button } from "../ui/button";
 
-// --- Sub-komponen ---
-
-const DesktopNav = () => (
-  <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-    {navItems.map((item, index) => (
-      <motion.a
-        key={item.label}
-        href={item.href}
-        className="text-white hover:text-orange-200 font-medium transition-colors relative text-sm xl:text-base"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.1 }}
-        whileHover={{ y: -2 }}
-      >
-        {item.label}
-        <motion.div
-          className="absolute bottom-0 left-0 w-full h-0.5 bg-orange-200"
-          style={{ scaleX: 0 }}
-          whileHover={{ scaleX: 1 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
-        />
-      </motion.a>
-    ))}
-  </div>
-);
-
-const MobileNav = () => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="lg:hidden">
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        variant="ghost"
-        size="sm"
-        className="text-white hover:bg-orange-700 p-2"
-      >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="absolute left-0 top-full w-full bg-gradient-to-r from-orange-600 to-orange-700 shadow-lg p-4"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="flex flex-col space-y-3">
-              {navItems.map((item, index) => (
-                <motion.a
-                  key={item.label}
-                  href={item.href}
-                  className="text-white hover:text-orange-200 font-medium py-2 px-4 rounded-lg hover:bg-orange-700/50 transition-colors text-sm"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </motion.a>
-              ))}
-              <div className="pt-3 mt-3 border-t border-orange-500">
-                <SearchComponent />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-// --- Komponen Header Utama ---
-// PERBAIKAN: Header tidak lagi menerima props
 export function Header() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (showSearch && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [showSearch]);
+
+  const handleSearchSubmit = () => {
+    const q = searchQuery.trim();
+    if (q) {
+      router.push(`/search/${encodeURIComponent(q)}`);
+      setShowSearch(false);
+      setSearchQuery("");
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearchSubmit();
+    if (e.key === "Escape") {
+      setShowSearch(false);
+      setSearchQuery("");
+    }
+  };
+
   return (
-    <motion.header
-      className="bg-gradient-to-r from-orange-600 to-orange-700 shadow-lg sticky top-0 z-50"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-    >
-      <div className="container mx-auto flex items-center justify-between px-4 lg:px-[150px] py-3 sm:py-4">
-        <motion.a
-          href="/"
-          className="text-xl sm:text-2xl font-bold text-white hover:text-orange-200 transition-colors"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          MaeNews
-        </motion.a>
+    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="text-2xl font-black italic text-primary">MAE<span className="text-gray-900">NEWS</span></Link>
 
-        <DesktopNav />
-
-        <div className="hidden lg:flex w-56">
-          <SearchComponent />
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center space-x-6">
+          {navItems.map((item) => (
+            <Link key={item.label} href={item.href} className="text-sm font-bold uppercase tracking-widest hover:text-primary transition-colors">
+              {item.label}
+            </Link>
+          ))}
         </div>
 
-        <MobileNav />
+        {/* Right Action */}
+        <div className="flex items-center gap-2">
+          {/* Search Toggle */}
+          {showSearch ? (
+            <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-200">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Cari berita..."
+                className="w-40 md:w-64 h-9 rounded-full bg-gray-100 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              />
+              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => { setShowSearch(false); setSearchQuery(""); }}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowSearch(true)}>
+              <Search className="h-5 w-5" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
+            {isOpen ? <X /> : <Menu />}
+          </Button>
+        </div>
       </div>
-    </motion.header>
+
+      {/* Mobile Nav */}
+      {isOpen && (
+        <div className="md:hidden border-t bg-white p-4 animate-in slide-in-from-top-4 duration-200">
+          <div className="flex flex-col space-y-4">
+            {navItems.map((item) => (
+              <Link key={item.label} href={item.href} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase italic">
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+    </nav>
   );
 }

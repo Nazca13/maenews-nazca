@@ -43,10 +43,10 @@ export function EventBanner({ events }: EventBannerProps) {
   useEffect(() => {
     setIsClient(true);
 
-    if (!activeEvent?.date) return;
+    if (!activeEvent?.startDate) return;
 
     const calculateTimeLeft = (): TimeLeft | null => {
-      const eventDate = new Date(activeEvent.date);
+      const eventDate = new Date(activeEvent.startDate);
       const difference = +eventDate - +new Date();
       if (difference > 0) {
         return {

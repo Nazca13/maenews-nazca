@@ -1,111 +1,36 @@
-
-import { motion } from "framer-motion";
-import { Heart } from "lucide-react";
+import Link from "next/link";
+import { Facebook, Twitter, Instagram, Youtube } from "lucide-react";
 
 export function Footer() {
-  const footerSections = [
-    {
-      title: "AnimeFeed",
-      content: "Portal berita anime dan industri kreatif terdepan di Indonesia. Dapatkan informasi terkini seputar anime, content creators, dan event otaku."
-    },
-    {
-      title: "Kategori",
-      links: [
-        "Anime Terbaru",
-        "Content Creator", 
-        "Event & Convention",
-        "Gaming",
-        "Cosplay"
-      ]
-    },
-    {
-      title: "Ikuti Kami",
-      links: [
-        "Twitter",
-        "Instagram", 
-        "YouTube",
-        "TikTok",
-        "Discord"
-      ]
-    },
-    {
-      title: "Kontak",
-      links: [
-        "Tentang Kami",
-        "Kontak",
-        "Kebijakan Privasi", 
-        "Syarat & Ketentuan"
-      ]
-    }
-  ];
-
   return (
-    <footer className="bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-      <div className="container mx-auto px-4 py-8 sm:py-12">
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 mb-6 sm:mb-8"
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          {footerSections.map((section, index) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <h4 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 text-orange-400">
-                {section.title}
-              </h4>
-              
-              {section.content ? (
-                <p className="text-gray-300 leading-relaxed text-sm sm:text-base">
-                  {section.content}
-                </p>
-              ) : (
-                <ul className="space-y-1 sm:space-y-2">
-                  {section.links?.map((link, linkIndex) => (
-                    <motion.li key={link}>
-                      <motion.a
-                        href="#"
-                        className="text-gray-300 hover:text-orange-400 transition-colors text-sm sm:text-base block"
-                        whileHover={{ x: 5 }}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: (index * 0.1) + (linkIndex * 0.05) }}
-                      >
-                        {link}
-                      </motion.a>
-                    </motion.li>
-                  ))}
-                </ul>
-              )}
-            </motion.div>
-          ))}
-        </motion.div>
-
-        <motion.div
-          className="border-t border-gray-700 pt-6 sm:pt-8 text-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-        >
-          <div className="flex flex-col sm:flex-row items-center justify-center mb-3 sm:mb-4 gap-2">
-            <motion.div
-              className="flex items-center text-gray-300 text-sm sm:text-base"
-              whileHover={{ scale: 1.05 }}
-            >
-              <span>Dibuat dengan</span>
-              <Heart className="w-4 h-4 mx-2 text-red-500" fill="currentColor" />
-              <span className="text-center sm:text-left">untuk komunitas anime Indonesia</span>
-            </motion.div>
+    <footer className="w-full border-t bg-gray-50 py-12">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div>
+            <Link href="/" className="text-xl font-black italic text-primary">MAE<span className="text-gray-900">NEWS</span></Link>
+            <p className="mt-4 text-sm text-gray-500 max-w-xs">Portal berita anime, manga, dan kultur pop Jepang terpercaya untuk komunitas Indonesia.</p>
           </div>
-          
-          <p className="text-gray-400 text-xs sm:text-sm">
-            &copy; 2024 AnimeFeed. All rights reserved.
-          </p>
-        </motion.div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2 text-sm font-bold uppercase tracking-wider">
+              <Link href="/about" className="hover:text-primary">Tentang Kami</Link>
+              <Link href="/contact" className="hover:text-primary">Kontak</Link>
+            </div>
+            <div className="flex flex-col gap-2 text-sm font-bold uppercase tracking-wider">
+              <Link href="/privacy" className="hover:text-primary">Privasi</Link>
+              <Link href="/terms" className="hover:text-primary">Syarat & Ketentuan</Link>
+            </div>
+          </div>
+          <div className="flex gap-4 md:justify-end">
+            {[Twitter, Facebook, Instagram, Youtube].map((Icon, i) => (
+              <Link key={i} href="#" className="h-10 w-10 flex items-center justify-center rounded-full bg-white border hover:bg-primary hover:text-white transition-all shadow-sm">
+                <Icon size={18} />
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="pt-8 border-t text-center text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+          © 2026 MAENEWS NETWORK. ALL RIGHTS RESERVED.
+        </div>
       </div>
     </footer>
   );

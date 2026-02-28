@@ -97,7 +97,7 @@ export function Sidebar({ trendingItems, upcomingEvents }: SidebarProps) {
                 <div className="w-16 h-16 rounded-xl flex-shrink-0 overflow-hidden">
                   <Image
                     src={
-                      event.imageUrl ||
+                      event.thumbnailUrl ||
                       `https://placehold.co/100x100/f3e8ff/c084fc?text=Event`
                     }
                     alt={event.title}

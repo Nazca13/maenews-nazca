@@ -1,0 +1,15 @@
+app/components/pages/SearchPage/SearchResults.tsx(3,27): error TS2307: Cannot find module '../EventCard' or its corresponding type declarations.
+app/components/pages/TagPage.tsx(4,35): error TS2307: Cannot find module './TagPage/TagCategoryFilter' or its corresponding type declarations.
+app/components/pages/TagPage.tsx(10,11): error TS2339: Property 'tags' does not exist on type 'UseQueryResult<Tag[], Error>'.
+app/components/pages/TagPage.tsx(23,20): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+app/hooks/useArticles.ts(2,27): error TS1261: Already included file name '/Volumes/HDD/CODE/maenews-nazca/app/lib/apiClient.ts' differs from file name '/Volumes/HDD/CODE/maenews-nazca/app/lib/ApiClient.ts' only in casing.
+  The file is in the program because:
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/hooks/useArticles.ts'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/hooks/useEvents.ts'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/query/apiSearch.ts'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/hooks/useTags.ts'
+    Matched by include pattern '**/*.ts' in '/Volumes/HDD/CODE/maenews-nazca/tsconfig.json'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/query/apiArticles.ts'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/query/apiEvents.ts'
+    Imported via "../lib/apiClient" from file '/Volumes/HDD/CODE/maenews-nazca/app/query/apiTags.ts'
+    Matched by include pattern '**/*.ts' in '/Volumes/HDD/CODE/maenews-nazca/tsconfig.json'

@@ -1,5 +1,4 @@
 // app/typing/TrendingItem.ts
-
 export interface TrendingItem {
     id: string;
     title: string;

@@ -28,13 +28,14 @@ export function LatestNewsArticle({ article }: LatestNewsArticleProps) {
           <div className="w-34 h-24 md:h-34 sm:w-56 md:w-64">
             <Image
               src={
+                article.thumbnailUrl ||
                 article.imageUrl ||
                 "https://placehold.co/400x300/e2e8f0/64748b?text=Img"
               }
               alt={article.title}
               width={256}
               height={170}
-              unoptimized 
+              unoptimized
               className="w-full h-full object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
             />
           </div>

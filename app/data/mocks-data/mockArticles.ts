@@ -2,22 +2,21 @@
 
 import { Article } from "@/app/typing";
 
-export const featuredArticle: Article = {
-    id: "0",
-    title: "Attack on Titan Final Season: Pengumuman Tanggal Rilis Episode Terakhir",
-    excerpt: "Studio WIT dan MAPPA mengumumkan jadwal resmi untuk episode final saga titan yang telah berlangsung selama satu dekade. Fans di seluruh dunia bersiap untuk perpisahan epik.",
-    description: "Deskripsi lengkap untuk Attack on Titan...",
-    category: "Anime",
-    author: "Admin",
-    publishedAt: "2025-07-31T12:30:00Z",
-    imageUrl: "https://placehold.co/1200x800/1E293B/FFFFFF?text=Attack+on+Titan",
-    tags: ["Attack on Titan", "Final Season", "MAPPA"],
-    featured: true,
-    views: 999,
-    slug: "attack-on-titan-final-season-pengumuman-tanggal-rilis-episode-terakhir",
-};
-
 export const mockArticles: Article[] = [
+    {
+        id: "0",
+        title: "Attack on Titan Final Season: Pengumuman Tanggal Rilis Episode Terakhir",
+        excerpt: "Studio WIT dan MAPPA mengumumkan jadwal resmi untuk episode final saga titan yang telah berlangsung selama satu dekade. Fans di seluruh dunia bersiap untuk perpisahan epik.",
+        description: "Deskripsi lengkap untuk Attack on Titan...",
+        category: "Anime",
+        author: "Admin",
+        publishedAt: "2025-07-31T12:30:00Z",
+        imageUrl: "https://placehold.co/1200x800/1E293B/FFFFFF?text=Attack+on+Titan",
+        tags: ["Attack on Titan", "Final Season", "MAPPA"],
+        featured: true,
+        views: 999,
+        slug: "attack-on-titan-final-season-pengumuman-tanggal-rilis-episode-terakhir",
+    },
     {
         id: "1",
         title: "Studio Ghibli Umumkan Proyek Anime Terbaru untuk 2026",
@@ -369,3 +368,5 @@ export const mockArticles: Article[] = [
         slug: "tower-of-god-season-2-penantian-panjang-fans-terjawab",
     },
 ];
+
+export const featuredArticle = mockArticles[0];

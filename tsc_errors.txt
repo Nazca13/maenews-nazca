@@ -1,0 +1,40 @@
+app/(main)/event/[eventSlug]/page.tsx(25,28): error TS2339: Property 'imageUrl' does not exist on type 'Event'.
+app/(main)/event/[eventSlug]/page.tsx(34,85): error TS2339: Property 'category' does not exist on type 'Event'.
+app/(main)/event/[eventSlug]/page.tsx(39,74): error TS2339: Property 'date' does not exist on type 'Event'.
+app/(main)/gallery/page.tsx(24,25): error TS2339: Property 'imageUrl' does not exist on type 'GalleryItem'.
+app/components/BannerEvent.tsx(46,23): error TS2339: Property 'date' does not exist on type 'Event'.
+app/components/BannerEvent.tsx(49,46): error TS2339: Property 'date' does not exist on type 'Event'.
+app/components/EventCard.tsx(17,22): error TS2339: Property 'imageUrl' does not exist on type 'Event'.
+app/components/EventCard.tsx(26,79): error TS2339: Property 'category' does not exist on type 'Event'.
+app/components/EventCard.tsx(33,46): error TS2339: Property 'date' does not exist on type 'Event'.
+app/components/HeroCard.tsx(29,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/HeroSidebarItem.tsx(15,13): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/NewsCard.tsx(30,13): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/article/ArticleDetail.tsx(55,91): error TS18048: 'article.views' is possibly 'undefined'.
+app/components/article/ArticleDetail.tsx(62,18): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/ArticleDetailPage.tsx(7,25): error TS2307: Cannot find module './ArticleDetailPage/TagList' or its corresponding type declarations.
+app/components/pages/ArticleDetailPage.tsx(9,33): error TS2307: Cannot find module './ArticleDetailPage/RelatedArticles' or its corresponding type declarations.
+app/components/pages/ArticleDetailPage.tsx(15,23): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+app/components/pages/ArticleDetailPage/ArticleHeader.tsx(23,16): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/ArticleListPage.tsx(5,31): error TS2307: Cannot find module './ArticleListPage/FilterSidebar' or its corresponding type declarations.
+app/components/pages/ArticleListPage.tsx(6,29): error TS2307: Cannot find module './ArticleListPage/ArticleCard' or its corresponding type declarations.
+app/components/pages/ArticleListPage.tsx(7,30): error TS2307: Cannot find module './ArticleListPage/SortDropdown' or its corresponding type declarations.
+app/components/pages/ArticleListPage.tsx(28,30): error TS7006: Parameter 'type' implicitly has an 'any' type.
+app/components/pages/ArticleListPage.tsx(28,36): error TS7006: Parameter 'val' implicitly has an 'any' type.
+app/components/pages/ArticleListPage.tsx(28,41): error TS7006: Parameter 'check' implicitly has an 'any' type.
+app/components/pages/FeaturedRow.tsx(16,11): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/Homepage/ArticleListPage/ArticleCard.tsx(15,13): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/Homepage/ArticleListPage/ArticleCars.tsx(16,13): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/Homepage/ArticleListPage/ArticleHeader.tsx(28,24): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
+app/components/pages/Homepage/HeroSection.tsx(10,9): error TS2322: Type 'string | undefined' is not assignable to type 'string | StaticImport'.
+  Type 'undefined' is not assignable to type 'string | StaticImport'.
