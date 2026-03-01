@@ -1,29 +1,36 @@
 import { useQuery } from "@tanstack/react-query";
-import { searchArticles } from "../lib/api";
-import { upcomingEvents } from "../data/mocks-data";
+import { searchArticles, getUpcomingEvents } from "../lib/api";
 
-interface SearchFilters {
-  type: string;
-  category: string;
-}
-
-export const useApiSearch = (query: string, filters?: SearchFilters) => {
+export const useApiSearch = (query: string, filters?: { type: string; category: string }) => {
   return useQuery({
     queryKey: ["search", query, filters],
     queryFn: async () => {
-      // Gunakan searchArticles dari api.ts (mendukung mock + live)
-      const articles = await searchArticles(query) ?? [];
-
-      // Filter event dari mock data berdasarkan query
       const q = query.toLowerCase();
-      const events = upcomingEvents.filter(
-        (e) =>
-          e.title.toLowerCase().includes(q) ||
-          e.description.toLowerCase().includes(q) ||
-          e.tags.some((t) => t.toLowerCase().includes(q))
-      );
 
-      return { articles, events };
+      // Ambil data dari service (mendukung mock/live)
+      const [articlesData, eventsData] = await Promise.all([
+        searchArticles(query),
+        getUpcomingEvents()
+      ]);
+
+      // Filter logic yang robust
+      const filteredArticles = (articlesData ?? []).filter(a => {
+        const matchQuery = a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q);
+        const matchCat = !filters?.category || a.category === filters.category;
+        return matchQuery && matchCat;
+      });
+
+      // Event tidak punya field "category", jadi kita match berdasarkan tags
+      const filteredEvents = (eventsData ?? []).filter(e => {
+        const matchQuery = e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q);
+        const matchCat = !filters?.category || e.tags.some(t => t === filters.category);
+        return matchQuery && matchCat;
+      });
+
+      return {
+        articles: filteredArticles,
+        events: filteredEvents
+      };
     },
     enabled: query.length > 0,
   });

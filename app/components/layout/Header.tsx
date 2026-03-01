@@ -26,6 +26,8 @@ export function Header() {
       router.push(`/search/${encodeURIComponent(q)}`);
       setShowSearch(false);
       setSearchQuery("");
+      // Mentor Note: Tambahkan setIsOpen(false) jika di mobile agar menu tertutup
+      setIsOpen(false);
     }
   };
 
