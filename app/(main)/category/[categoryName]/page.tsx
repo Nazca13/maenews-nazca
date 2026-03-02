@@ -2,12 +2,11 @@ import { getArticlesByCategory, getTrendingItems, getUpcomingEvents } from "@/ap
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
 import { Sidebar } from "@/app/components/layout/Sidebar";
 import { EmptyState } from "@/app/components/ui/EmptyState";
-import { PaginationControls } from "@/app/components/ui/PaginationControls";
 import { Tag } from "lucide-react";
 
 export default async function CategoryPage({ params }: { params: { categoryName: string } }) {
   const categorySlug = decodeURIComponent(params.categoryName);
-  
+
   const [articles, trending, events] = await Promise.all([
     getArticlesByCategory(categorySlug),
     getTrendingItems(),
@@ -33,19 +32,15 @@ export default async function CategoryPage({ params }: { params: { categoryName:
 
           {/* Content Logic */}
           {articles && articles.length > 0 ? (
-            <>
-              <div className="flex flex-col gap-8">
-                {articles.map((article) => (
-                  <LatestNewsArticle key={article.id} article={article} />
-                ))}
-              </div>
-              {/* Pagination (Task #35) */}
-              <PaginationControls currentPage={1} totalPages={3} onPageChange={() => {}} />
-            </>
+            <div className="flex flex-col gap-8">
+              {articles.map((article) => (
+                <LatestNewsArticle key={article.id} article={article} />
+              ))}
+            </div>
           ) : (
-            <EmptyState 
-              title="Kategori Kosong" 
-              message={`Belum ada berita di kategori ${title}. Tim redaksi kami sedang bekerja keras!`} 
+            <EmptyState
+              title="Kategori Kosong"
+              message={`Belum ada berita di kategori ${title}. Tim redaksi kami sedang bekerja keras!`}
             />
           )}
         </div>
