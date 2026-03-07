@@ -11,7 +11,7 @@ function FeaturedRowCard({ article }: { article: Article }) {
       href={`/article/${article.slug}`}
       className="block group relative rounded-lg overflow-hidden"
     >
-      <div className="aspect-video">
+      <div className="relative aspect-video">
         <Image
           src={article.thumbnailUrl || article.imageUrl || ""}
           alt={article.title}

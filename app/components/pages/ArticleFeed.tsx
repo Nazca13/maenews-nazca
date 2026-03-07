@@ -5,86 +5,67 @@ import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
 import { Loader2, Flame } from "lucide-react";
 
-const ARTICLES_PER_PAGE = 5;
-
-interface ArticleFeedProps {
-  initialArticles: Article[];
-  articlesToLoad: Article[];
-}
-
-export function ArticleFeed({ initialArticles, articlesToLoad }: ArticleFeedProps) {
+export function ArticleFeed({ initialArticles, articlesToLoad }: { initialArticles: Article[], articlesToLoad: Article[] }) {
   const [page, setPage] = useState(0);
   const [loadedArticles, setLoadedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(articlesToLoad.length > 0);
-
   const observer = useRef<IntersectionObserver | null>(null);
 
   const loadMoreArticles = useCallback(() => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
-
-    // Simulasi jeda jaringan untuk efek loading
+    
     setTimeout(() => {
-      const start = page * ARTICLES_PER_PAGE;
-      const end = start + ARTICLES_PER_PAGE;
-      const newArticles = articlesToLoad.slice(start, end);
-
-      if (newArticles.length > 0) {
-        setLoadedArticles((prev) => [...prev, ...newArticles]);
+      const start = page * 5;
+      const end = start + 5;
+      const newBatch = articlesToLoad.slice(start, end);
+      
+      if (newBatch.length > 0) {
+        setLoadedArticles((prev) => [...prev, ...newBatch]);
         setPage((prev) => prev + 1);
       } else {
         setHasMore(false);
       }
       setIsLoading(false);
-    }, 1000); // Jeda 1 detik
+    }, 800);
   }, [page, isLoading, hasMore, articlesToLoad]);
 
-  const lastArticleElementRef = useCallback(
-    (node: HTMLElement | null) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreArticles();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore, loadMoreArticles]
-  );
+  const lastElementRef = useCallback((node: HTMLElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) loadMoreArticles();
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, loadMoreArticles]);
 
   return (
-    <section>
-      <div className="flex items-center gap-2 mb-4">
-        <Flame className="w-5 h-5 text-secondary" />
-        <h2 className="text-xl font-bold text-secondary">Berita Terbaru</h2>
-      </div>
-      <div className="flex flex-col gap-6">
-        {/* Menampilkan artikel awal dari server */}
-        {initialArticles.map((article) => (
-          <LatestNewsArticle key={article.id} article={article} />
-        ))}
-        {/* Menampilkan artikel yang di-load secara dinamis */}
-        {loadedArticles.map((article, index) => {
-          if (loadedArticles.length === index + 1) {
-            return (
-              <div ref={lastArticleElementRef} key={article.id}>
-                <LatestNewsArticle article={article} />
-              </div>
-            );
-          }
-          return <LatestNewsArticle key={article.id} article={article} />;
-        })}
+    <section className="space-y-8">
+      <div className="flex items-center gap-2 mb-6">
+        <Flame className="w-6 h-6 text-primary" />
+        <h2 className="text-2xl font-black italic uppercase text-gray-900">Feed Terbaru</h2>
       </div>
 
-      {/* Indikator Loading */}
+      <div className="flex flex-col gap-6">
+        {/* FIX: Gunakan prefix unik agar key tidak bentrok dengan list lain */}
+        {initialArticles.map((article, idx) => (
+          <LatestNewsArticle key={`feed-init-${article.id}-${idx}`} article={article} />
+        ))}
+        
+        {loadedArticles.map((article, index) => (
+          <div 
+            key={`feed-load-${article.id}-${index}`} 
+            ref={loadedArticles.length === index + 1 ? lastElementRef : null}
+          >
+            <LatestNewsArticle article={article} />
+          </div>
+        ))}
+      </div>
+
       {isLoading && (
-        <div className="flex justify-center items-center py-6">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <span className="ml-2 text-gray-600">Memuat lebih banyak...</span>
+        <div className="flex justify-center py-10">
+          <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       )}
     </section>

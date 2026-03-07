@@ -20,8 +20,8 @@ export function LatestNewsSection({ title, articles }: LatestNewsSectionProps) {
         </div>
       )}
       <div className="flex flex-col gap-6">
-        {articles.map((article) => (
-          <LatestNewsArticle key={article.id} article={article} />
+        {articles.map((article, idx) => (
+          <LatestNewsArticle key={article.id} article={article} priority={idx === 0} />
         ))}
       </div>
     </section>

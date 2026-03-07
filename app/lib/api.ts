@@ -20,7 +20,7 @@ const API_CONFIG: ApiConfig = {
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     "https://golang-maenews-animae-id2569-ksgm0g96.leapcell.dev/api/v1",
   mode: (process.env.NEXT_PUBLIC_API_MODE as ApiMode) || "mock",
-};
+}
 
 // --------------- Service Interface ---------------
 
