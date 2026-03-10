@@ -2,6 +2,7 @@ import { NavItem } from "@/app/typing";
 
 // href menunjuk ke path kategori yang dinamis
 export const navItems: NavItem[] = [
+    { label: "Beranda", href: "/" },
     { label: "Anime", href: "/category/anime" },
     { label: "Creator", href: "/category/content-creator" },
     { label: "Event", href: "/event" },

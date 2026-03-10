@@ -12,15 +12,13 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <motion.div
-        className="min-h-screen bg-white"
+        className="min-h-screen bg-[#FAFAFA]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.4 }}
       >
         <Header />
-        <main className="container mx-auto lg:px-[150px] md:py-4">
-          {children}
-        </main>
+        <main>{children}</main>
         <Footer />
       </motion.div>
     </QueryClientProvider>

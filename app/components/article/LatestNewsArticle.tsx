@@ -1,49 +1,66 @@
 "use client";
-import { motion } from "framer-motion";
-import { Clock, User } from "lucide-react";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Article } from "@/app/typing";
-import { formatRelativeTime } from "@/app/utils/dateUtils";
+import { formatShortDate } from "@/app/utils/dateUtils";
 
 export function LatestNewsArticle({ article, priority = false }: { article: Article; priority?: boolean }) {
   const displayImg = article.thumbnailUrl || article.imageUrl || "https://placehold.co/400x300?text=No+Image";
 
   return (
     <Link href={`/article/${article.slug}`} className="block group">
-      <motion.article
-        className="flex flex-row-reverse sm:flex-row items-center gap-4 p-4 bg-white rounded-3xl border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300"
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-      >
-        {/* FIX: Parent Image harus punya class 'relative' */}
-        <div className="relative w-32 h-24 sm:w-56 sm:h-36 shrink-0 overflow-hidden rounded-2xl">
+      <article className="flex gap-4 sm:gap-5">
+        {/* Article Image — bigger to match gambar 3 */}
+        <div className="relative w-[120px] h-[90px] sm:w-[240px] sm:h-[160px] shrink-0 overflow-hidden rounded-lg bg-[#090909]">
           <Image
             src={displayImg}
             alt={article.title}
             fill
-            sizes="(max-width: 768px) 30vw, 300px"
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            sizes="(max-width: 768px) 160px, 240px"
+            className="object-cover transition-transform duration-400 ease-out group-hover:scale-105"
             unoptimized
             priority={priority}
           />
         </div>
 
-        <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
-            <User size={12} /> {article.category}
+        {/* Article Info */}
+        <div className="flex-1 flex flex-col justify-between min-w-0 py-0.5">
+          {/* Top: Category Tag + shares/views */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] font-bold uppercase px-2.5 py-0.5 bg-primary text-white rounded-sm">
+              {article.category}
+            </span>
+            <div className="hidden sm:flex items-center gap-3 ml-auto">
+              <div className="flex items-center gap-1">
+                <img src="/icon/shares-icon.svg" alt="shares" width={14} height={14} />
+                <span className="text-[10px] text-[#A6A6A6] font-medium">{article.shares || 173} shares</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <img src="/icon/views-icon.svg" alt="views" width={14} height={14} />
+                <span className="text-[10px] text-[#A6A6A6] font-medium">{article.views || 981} views</span>
+              </div>
+            </div>
           </div>
-          <h3 className="text-sm sm:text-xl font-black leading-tight text-gray-900 group-hover:text-primary transition-colors italic uppercase line-clamp-2">
+
+          {/* Title */}
+          <h3 className="text-sm sm:text-base font-bold leading-tight text-[#090909] line-clamp-2 mt-1.5 transition-colors duration-200 group-hover:text-primary">
             {article.title}
           </h3>
-          <div className="flex items-center text-[10px] text-gray-400 font-bold gap-2">
-            <Clock size={12} /> {formatRelativeTime(article.publishedAt)}
+
+          {/* Author + Date */}
+          <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-[#A6A6A6] font-medium mt-1">
+            <span>{article.author}</span>
+            <span>•</span>
+            <span>{formatShortDate(article.publishedAt)}</span>
           </div>
-          <p className="hidden md:line-clamp-2 text-xs text-gray-500 font-medium leading-relaxed">
+
+          {/* Excerpt */}
+          <p className="hidden sm:line-clamp-2 text-xs text-[#A6A6A6] leading-relaxed mt-1.5">
             {article.excerpt}
           </p>
         </div>
-      </motion.article>
+      </article>
     </Link>
   );
 }

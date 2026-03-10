@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "./article/LatestNewsArticle";
 import { Loader2 } from "lucide-react";
@@ -41,8 +41,8 @@ export function InfiniteScrollArticles({ articlesToLoad }: { articlesToLoad: Art
   return (
     <div className="flex flex-col gap-6">
       {loadedArticles.map((article, index) => (
-        <div 
-          key={`infinite-${article.id}-${index}`} 
+        <div
+          key={`infinite-${article.id}-${index}`}
           ref={loadedArticles.length === index + 1 ? lastRef : null}
         >
           <LatestNewsArticle article={article} />

@@ -1,100 +1,167 @@
 "use client";
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { useState, useRef, KeyboardEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Menu, X, Search } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
 import { navItems } from "@/app/data/Navigation";
-import { Button } from "../ui/button";
 
 export function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
-  useEffect(() => {
-    if (showSearch && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [showSearch]);
+  const pathname = usePathname();
 
   const handleSearchSubmit = () => {
     const q = searchQuery.trim();
     if (q) {
       router.push(`/search/${encodeURIComponent(q)}`);
-      setShowSearch(false);
       setSearchQuery("");
-      // Mentor Note: Tambahkan setIsOpen(false) jika di mobile agar menu tertutup
       setIsOpen(false);
     }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleSearchSubmit();
-    if (e.key === "Escape") {
-      setShowSearch(false);
-      setSearchQuery("");
-    }
+  };
+
+  const isActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    return pathname.startsWith(href);
   };
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo */}
-        <Link href="/" className="text-2xl font-black italic text-primary">MAE<span className="text-gray-900">NEWS</span></Link>
+    <header className="sticky top-0 z-50 w-full">
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex items-center space-x-6">
-          {navItems.map((item) => (
-            <Link key={item.label} href={item.href} className="text-sm font-bold uppercase tracking-widest hover:text-primary transition-colors">
-              {item.label}
-            </Link>
-          ))}
-        </div>
+      {/* Main Nav Bar */}
+      <nav className="bg-white">
+        <div className="container mx-auto px-4 lg:px-[150px] flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0 flex items-center gap-1.5">
+            <img
+              src="/logo/logonya.svg"
+              alt="Maenews Logo"
+              className="h-10 md:h-14 w-auto"
+            />
+          </Link>
 
-        {/* Right Action */}
-        <div className="flex items-center gap-2">
-          {/* Search Toggle */}
-          {showSearch ? (
-            <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-200">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-0.5">
+            {navItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`relative px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors ${isActive(item.href)
+                  ? "text-[#090909]"
+                  : "text-[#A6A6A6] hover:text-[#090909]"
+                  }`}
+              >
+                {item.label}
+                {isActive(item.href) && (
+                  <span className="absolute -bottom-[10px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-primary rounded-full" />
+                )}
+              </Link>
+            ))}
+          </div>
+
+          {/* Search Bar + Mobile Menu */}
+          <div className="flex items-center gap-3">
+            {/* Search Bar — Desktop */}
+            <div className="hidden md:flex items-center border border-gray-200 rounded-full overflow-hidden">
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Cari berita..."
-                className="w-40 md:w-64 h-9 rounded-full bg-gray-100 px-4 text-sm font-medium outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                placeholder="Search..."
+                className="w-36 h-8 bg-white px-4 text-[11px] font-medium text-[#090909] placeholder:text-[#A6A6A6] outline-none"
               />
-              <Button variant="ghost" size="icon" className="rounded-full" onClick={() => { setShowSearch(false); setSearchQuery(""); }}>
-                <X className="h-4 w-4" />
-              </Button>
+              <button
+                onClick={handleSearchSubmit}
+                className="h-8 w-8 flex items-center justify-center bg-primary flex-shrink-0 hover:bg-[#e56200] transition-colors cursor-pointer rounded-r-full"
+                aria-label="Search"
+              >
+                <img src="/icon/search-icon.svg" alt="Search" width={14} height={14} />
+              </button>
             </div>
-          ) : (
-            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setShowSearch(true)}>
-              <Search className="h-5 w-5" />
-            </Button>
-          )}
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X /> : <Menu />}
-          </Button>
-        </div>
-      </div>
 
-      {/* Mobile Nav */}
-      {isOpen && (
-        <div className="md:hidden border-t bg-white p-4 animate-in slide-in-from-top-4 duration-200">
-          <div className="flex flex-col space-y-4">
-            {navItems.map((item) => (
-              <Link key={item.label} href={item.href} onClick={() => setIsOpen(false)} className="text-lg font-bold uppercase italic">
-                {item.label}
-              </Link>
-            ))}
+            {/* Mobile Hamburger — smooth animated bars → X */}
+            <button
+              className="md:hidden relative w-[22px] h-[18px] p-0 bg-transparent border-none cursor-pointer"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle menu"
+            >
+              <span
+                className="absolute left-0 w-full h-[2px] bg-[#090909] rounded-full transition-all duration-300 ease-in-out"
+                style={{
+                  top: isOpen ? "8px" : "0px",
+                  transform: isOpen ? "rotate(45deg)" : "rotate(0)",
+                }}
+              />
+              <span
+                className="absolute left-0 top-[8px] w-full h-[2px] bg-[#090909] rounded-full transition-all duration-300 ease-in-out"
+                style={{
+                  opacity: isOpen ? 0 : 1,
+                  transform: isOpen ? "scaleX(0)" : "scaleX(1)",
+                }}
+              />
+              <span
+                className="absolute left-0 w-full h-[2px] bg-[#090909] rounded-full transition-all duration-300 ease-in-out"
+                style={{
+                  top: isOpen ? "8px" : "16px",
+                  transform: isOpen ? "rotate(-45deg)" : "rotate(0)",
+                }}
+              />
+            </button>
           </div>
         </div>
-      )}
-    </nav>
+
+        {/* Mobile Dropdown — smooth slide animation */}
+        <div
+          className="md:hidden overflow-hidden transition-all duration-300 ease-in-out border-t border-transparent"
+          style={{
+            maxHeight: isOpen ? "400px" : "0px",
+            opacity: isOpen ? 1 : 0,
+            borderColor: isOpen ? "#f3f4f6" : "transparent",
+          }}
+        >
+          <div className="bg-white px-4 py-4">
+            <div className="flex items-center border border-gray-200 rounded-full overflow-hidden mb-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search..."
+                className="flex-1 h-10 bg-white px-4 text-sm text-[#090909] placeholder:text-[#A6A6A6] outline-none"
+              />
+              <button
+                onClick={handleSearchSubmit}
+                className="h-10 w-10 flex items-center justify-center bg-primary flex-shrink-0 rounded-r-full"
+                aria-label="Search"
+              >
+                <img src="/icon/search-icon.svg" alt="Search" width={16} height={16} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-1">
+              {navItems.map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`px-3 py-2.5 rounded-lg text-sm font-bold uppercase transition-colors duration-200 ${isActive(item.href)
+                    ? "text-primary bg-primary/5"
+                    : "text-[#090909] hover:bg-gray-50"
+                    }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
   );
 }

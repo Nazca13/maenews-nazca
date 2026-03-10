@@ -1,6 +1,6 @@
 ========================================
   MAENEWS-NAZCA - FULL SOURCE CODE
-  Generated: 2026-03-06 04:54:55
+  Generated: 2026-03-08 13:40:58
 ========================================
 
 TABLE OF CONTENTS
@@ -133,20 +133,19 @@ TABLE OF CONTENTS
   126. ./app/utils/dateUtils.ts
   127. ./docs/ARCHITECTURE.md
   128. ./docs/openapi.yaml
-  129. ./docs/swagger.html
-  130. ./eslint.config.mjs
-  131. ./next-env.d.ts
+  129. ./docs/pc_feedback.md
+  130. ./docs/swagger.html
+  131. ./eslint.config.mjs
   132. ./next.config.js
   133. ./package.json
   134. ./postcss.config.mjs
   135. ./public/docs/openapi.yaml
   136. ./public/docs/swagger.html
   137. ./public/favicon/site.webmanifest
-  138. ./public/site.webmanifest
-  139. ./tailwind.config.ts
-  140. ./tsconfig.json
+  138. ./tailwind.config.ts
+  139. ./tsconfig.json
 
-Total files: 140
+Total files: 139
 
 ================================================================
 FILE: ./.env.example
@@ -518,13 +517,16 @@ FILE: ./app/(main)/globals.css
 }
 
 @layer utilities {
+
   /* Background Colors */
   .bg-primary {
     background-color: var(--primary);
   }
+
   .bg-secondary {
     background-color: var(--secondary);
   }
+
   .bg-tertiary {
     background-color: var(--tertiary);
   }
@@ -533,9 +535,11 @@ FILE: ./app/(main)/globals.css
   .hover\:bg-primary:hover {
     background-color: var(--primary);
   }
+
   .hover\:bg-secondary:hover {
     background-color: var(--secondary);
   }
+
   .hover\:bg-tertiary:hover {
     background-color: var(--tertiary);
   }
@@ -544,15 +548,19 @@ FILE: ./app/(main)/globals.css
   .text-primary {
     color: var(--primary);
   }
+
   .text-secondary {
     color: var(--secondary);
   }
+
   .text-tertiary {
     color: var(--tertiary);
   }
+
   .text-base-text {
     color: var(--base-text);
   }
+
   .text-subtle-text {
     color: var(--subtle-text);
   }
@@ -561,9 +569,11 @@ FILE: ./app/(main)/globals.css
   .hover\:text-primary:hover {
     color: var(--primary);
   }
+
   .hover\:text-secondary:hover {
     color: var(--secondary);
   }
+
   .hover\:text-tertiary:hover {
     color: var(--tertiary);
   }
@@ -572,9 +582,11 @@ FILE: ./app/(main)/globals.css
   .border-primary {
     border-color: var(--primary);
   }
+
   .border-secondary {
     border-color: var(--secondary);
   }
+
   .border-border-color {
     border-color: var(--border-color);
   }
@@ -583,11 +595,9 @@ FILE: ./app/(main)/globals.css
   .focus\:ring-primary:focus {
     --tw-ring-opacity: 1;
     --tw-ring-color: var(--primary);
-    box-shadow: var(--tw-ring-inset) 0 0 0
-      calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    box-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   }
 }
-
 
 ================================================================
 FILE: ./app/(main)/layout.tsx
@@ -1207,35 +1217,23 @@ import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "./article/LatestNewsArticle";
 import { Loader2 } from "lucide-react";
 
-const ARTICLES_PER_PAGE = 5;
-
-interface InfiniteScrollArticlesProps {
-  articlesToLoad: Article[];
-}
-
-export function InfiniteScrollArticles({
-  articlesToLoad,
-}: InfiniteScrollArticlesProps) {
+export function InfiniteScrollArticles({ articlesToLoad }: { articlesToLoad: Article[] }) {
   const [page, setPage] = useState(0);
   const [loadedArticles, setLoadedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(articlesToLoad.length > 0);
-
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const loadMoreArticles = useCallback(() => {
+  const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
-
-    // Simulasi jeda jaringan untuk efek loading
     setTimeout(() => {
-      const start = page * ARTICLES_PER_PAGE;
-      const end = start + ARTICLES_PER_PAGE;
-      const newArticles = articlesToLoad.slice(start, end);
-
-      if (newArticles.length > 0) {
-        setLoadedArticles((prev) => [...prev, ...newArticles]);
-        setPage((prev) => prev + 1);
+      const start = page * 5;
+      const end = start + 5;
+      const newBatch = articlesToLoad.slice(start, end);
+      if (newBatch.length > 0) {
+        setLoadedArticles((prev) => [...prev, ...newBatch]);
+        setPage((p) => p + 1);
       } else {
         setHasMore(false);
       }
@@ -1243,53 +1241,33 @@ export function InfiniteScrollArticles({
     }, 1000);
   }, [page, isLoading, hasMore, articlesToLoad]);
 
-  useEffect(() => {
-    loadMoreArticles();
-  }, [loadMoreArticles]);
-
-  const lastArticleElementRef = useCallback(
-    (node: HTMLElement | null) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreArticles();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore, loadMoreArticles]
-  );
+  const lastRef = useCallback((node: HTMLElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore) loadMore();
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, loadMore]);
 
   return (
-    <>
-      <div className="flex flex-col gap-6">
-        {loadedArticles.map((article, index) => {
-          // Tambahkan ref ke elemen terakhir untuk memicu load more
-          if (loadedArticles.length === index + 1) {
-            return (
-              <div ref={lastArticleElementRef} key={article.id}>
-                <LatestNewsArticle article={article} />
-              </div>
-            );
-          }
-          return <LatestNewsArticle key={article.id} article={article} />;
-        })}
-      </div>
-
-      {/* Indikator Loading */}
+    <div className="flex flex-col gap-6">
+      {loadedArticles.map((article, index) => (
+        <div 
+          key={`infinite-${article.id}-${index}`} 
+          ref={loadedArticles.length === index + 1 ? lastRef : null}
+        >
+          <LatestNewsArticle article={article} />
+        </div>
+      ))}
       {isLoading && (
-        <div className="flex justify-center items-center py-6">
+        <div className="flex justify-center py-6">
           <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <span className="ml-2 text-gray-600">Memuat lebih banyak...</span>
         </div>
       )}
-    </>
+    </div>
   );
 }
-
 
 ================================================================
 FILE: ./app/components/NewsCard.tsx
@@ -1445,7 +1423,6 @@ export function SearchComponent() {
 FILE: ./app/components/article/LatestNewsArticle.tsx
 ================================================================
 "use client";
-
 import { motion } from "framer-motion";
 import { Clock, User } from "lucide-react";
 import Link from "next/link";
@@ -1453,68 +1430,40 @@ import Image from "next/image";
 import { Article } from "@/app/typing";
 import { formatRelativeTime } from "@/app/utils/dateUtils";
 
-interface LatestNewsArticleProps {
-  article: Article;
-}
+export function LatestNewsArticle({ article, priority = false }: { article: Article; priority?: boolean }) {
+  const displayImg = article.thumbnailUrl || article.imageUrl || "https://placehold.co/400x300?text=No+Image";
 
-export function LatestNewsArticle({ article }: LatestNewsArticleProps) {
   return (
-    // Seluruh kartu sekarang dibungkus oleh SATU Link dengan kelas 'group'
     <Link href={`/article/${article.slug}`} className="block group">
       <motion.article
-        // Gaya responsif tetap sama
-        className="flex flex-row-reverse sm:flex-row items-center gap-4 p-4 bg-white rounded-lg shadow-sm 
-                   sm:items-start sm:p-0 sm:bg-transparent sm:shadow-none sm:gap-6"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        className="flex flex-row-reverse sm:flex-row items-center gap-4 p-4 bg-white rounded-3xl border border-transparent hover:border-gray-100 hover:shadow-xl transition-all duration-300"
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
       >
-        {/* Gambar Artikel (Link terpisah DIHAPUS) */}
-        <div className="flex-shrink-0">
-          <div className="w-34 h-24 md:h-34 sm:w-56 md:w-64">
-            <Image
-              src={
-                article.thumbnailUrl ||
-                article.imageUrl ||
-                "https://placehold.co/400x300/e2e8f0/64748b?text=Img"
-              }
-              alt={article.title}
-              width={256}
-              height={170}
-              unoptimized
-              className="w-full h-full object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
-            />
-          </div>
+        {/* FIX: Parent Image harus punya class 'relative' */}
+        <div className="relative w-32 h-24 sm:w-56 sm:h-36 shrink-0 overflow-hidden rounded-2xl">
+          <Image
+            src={displayImg}
+            alt={article.title}
+            fill
+            sizes="(max-width: 768px) 30vw, 300px"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            unoptimized
+            priority={priority}
+          />
         </div>
 
-        {/* Konten Teks Artikel */}
-        <div className="flex-1">
-          {/* Judul (Link terpisah DIHAPUS) */}
-          <motion.h2
-            // Menggunakan 'group-hover' untuk mengubah warna saat seluruh kartu di-hover
-            className="text-base md:text-lg font-bold text-gray-800 hover:text-secondary group-hover:text-secondary leading-tight mb-2 line-clamp-3 transition-colors duration-200"
-            whileHover={{ y: -2 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
-            {article.title}
-          </motion.h2>
-
-          {/* Meta Info */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-x-4 gap-y-1 text-xs text-gray-500 mb-3">
-            <div className="flex items-center">
-              <User className="w-4 h-4 mr-1.5 text-red-500" />
-              <span className="font-bold text-red-600">{article.category}</span>
-            </div>
-            <div className="flex items-center gap-x-4">
-              <div className="flex items-center">
-                <Clock className="w-4 h-4 mr-1.5" />
-                <span>{formatRelativeTime(article.publishedAt)}</span>
-              </div>
-            </div>
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase text-primary tracking-widest">
+            <User size={12} /> {article.category}
           </div>
-
-          {/* Excerpt hanya tampil di desktop */}
-          <p className="hidden sm:block text-gray-600 text-sm leading-relaxed line-clamp-2">
+          <h3 className="text-sm sm:text-xl font-black leading-tight text-gray-900 group-hover:text-primary transition-colors italic uppercase line-clamp-2">
+            {article.title}
+          </h3>
+          <div className="flex items-center text-[10px] text-gray-400 font-bold gap-2">
+            <Clock size={12} /> {formatRelativeTime(article.publishedAt)}
+          </div>
+          <p className="hidden md:line-clamp-2 text-xs text-gray-500 font-medium leading-relaxed">
             {article.excerpt}
           </p>
         </div>
@@ -1522,7 +1471,6 @@ export function LatestNewsArticle({ article }: LatestNewsArticleProps) {
     </Link>
   );
 }
-
 
 ================================================================
 FILE: ./app/components/article/LatestNewsSection.tsx
@@ -1549,8 +1497,8 @@ export function LatestNewsSection({ title, articles }: LatestNewsSectionProps) {
         </div>
       )}
       <div className="flex flex-col gap-6">
-        {articles.map((article) => (
-          <LatestNewsArticle key={article.id} article={article} />
+        {articles.map((article, idx) => (
+          <LatestNewsArticle key={article.id} article={article} priority={idx === 0} />
         ))}
       </div>
     </section>
@@ -1990,7 +1938,7 @@ import { Clock, User, BookOpen } from "lucide-react";
 export function ArticleHeader({ article }: { article: Article }) {
   return (
     <header className="mb-12">
-      <Breadcrumb items={[{ label: article.category, href: "#" }, { label: "Detail", href: "#" }]} />
+      <Breadcrumb items={[{ label: article.category, href: `/category/${article.category.toLowerCase()}` }, { label: "Detail", href: "#" }]} />
       <div className="mt-8 mb-8">
         <Badge className="mb-4 bg-secondary text-white font-bold">{article.category}</Badge>
         <h1 className="text-4xl md:text-6xl font-black text-gray-900 leading-[1.1] italic uppercase tracking-tighter">
@@ -2000,10 +1948,18 @@ export function ArticleHeader({ article }: { article: Article }) {
       <div className="flex flex-wrap items-center gap-6 text-xs font-black text-gray-400 uppercase tracking-widest mb-10">
         <div className="flex items-center gap-2"><User size={14} className="text-primary" /> {article.author}</div>
         <div className="flex items-center gap-2"><Clock size={14} /> {new Date(article.publishedAt).toLocaleDateString()}</div>
-        <div className="flex items-center gap-2"><BookOpen size={14} /> {article.readTimeMinutes} Min Read</div>
+        <div className="flex items-center gap-2"><BookOpen size={14} /> {article.readTimeMinutes || 5} Min Read</div>
       </div>
-      <div className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl">
-        <Image src={article.thumbnailUrl || ""} alt={article.title} fill className="object-cover" priority />
+      {/* FIX: Tambahkan property priority dan wrapper relative */}
+      <div className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl bg-gray-100">
+        <Image 
+          src={article.thumbnailUrl || article.imageUrl || ""} 
+          alt={article.title} 
+          fill 
+          className="object-cover" 
+          priority 
+          sizes="(max-width: 1280px) 100vw, 1200px"
+        />
       </div>
     </header>
   );
@@ -2085,92 +2041,72 @@ import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
 import { Loader2, Flame } from "lucide-react";
 
-const ARTICLES_PER_PAGE = 5;
-
-interface ArticleFeedProps {
-  initialArticles: Article[];
-  articlesToLoad: Article[];
-}
-
-export function ArticleFeed({ initialArticles, articlesToLoad }: ArticleFeedProps) {
+export function ArticleFeed({ initialArticles, articlesToLoad }: { initialArticles: Article[], articlesToLoad: Article[] }) {
   const [page, setPage] = useState(0);
   const [loadedArticles, setLoadedArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(articlesToLoad.length > 0);
-
   const observer = useRef<IntersectionObserver | null>(null);
 
   const loadMoreArticles = useCallback(() => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
-
-    // Simulasi jeda jaringan untuk efek loading
+    
     setTimeout(() => {
-      const start = page * ARTICLES_PER_PAGE;
-      const end = start + ARTICLES_PER_PAGE;
-      const newArticles = articlesToLoad.slice(start, end);
-
-      if (newArticles.length > 0) {
-        setLoadedArticles((prev) => [...prev, ...newArticles]);
+      const start = page * 5;
+      const end = start + 5;
+      const newBatch = articlesToLoad.slice(start, end);
+      
+      if (newBatch.length > 0) {
+        setLoadedArticles((prev) => [...prev, ...newBatch]);
         setPage((prev) => prev + 1);
       } else {
         setHasMore(false);
       }
       setIsLoading(false);
-    }, 1000); // Jeda 1 detik
+    }, 800);
   }, [page, isLoading, hasMore, articlesToLoad]);
 
-  const lastArticleElementRef = useCallback(
-    (node: HTMLElement | null) => {
-      if (isLoading) return;
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMoreArticles();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [isLoading, hasMore, loadMoreArticles]
-  );
+  const lastElementRef = useCallback((node: HTMLElement | null) => {
+    if (isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) loadMoreArticles();
+    });
+    if (node) observer.current.observe(node);
+  }, [isLoading, hasMore, loadMoreArticles]);
 
   return (
-    <section>
-      <div className="flex items-center gap-2 mb-4">
-        <Flame className="w-5 h-5 text-secondary" />
-        <h2 className="text-xl font-bold text-secondary">Berita Terbaru</h2>
-      </div>
-      <div className="flex flex-col gap-6">
-        {/* Menampilkan artikel awal dari server */}
-        {initialArticles.map((article) => (
-          <LatestNewsArticle key={article.id} article={article} />
-        ))}
-        {/* Menampilkan artikel yang di-load secara dinamis */}
-        {loadedArticles.map((article, index) => {
-          if (loadedArticles.length === index + 1) {
-            return (
-              <div ref={lastArticleElementRef} key={article.id}>
-                <LatestNewsArticle article={article} />
-              </div>
-            );
-          }
-          return <LatestNewsArticle key={article.id} article={article} />;
-        })}
+    <section className="space-y-8">
+      <div className="flex items-center gap-2 mb-6">
+        <Flame className="w-6 h-6 text-primary" />
+        <h2 className="text-2xl font-black italic uppercase text-gray-900">Feed Terbaru</h2>
       </div>
 
-      {/* Indikator Loading */}
+      <div className="flex flex-col gap-6">
+        {/* FIX: Gunakan prefix unik agar key tidak bentrok dengan list lain */}
+        {initialArticles.map((article, idx) => (
+          <LatestNewsArticle key={`feed-init-${article.id}-${idx}`} article={article} />
+        ))}
+        
+        {loadedArticles.map((article, index) => (
+          <div 
+            key={`feed-load-${article.id}-${index}`} 
+            ref={loadedArticles.length === index + 1 ? lastElementRef : null}
+          >
+            <LatestNewsArticle article={article} />
+          </div>
+        ))}
+      </div>
+
       {isLoading && (
-        <div className="flex justify-center items-center py-6">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <span className="ml-2 text-gray-600">Memuat lebih banyak...</span>
+        <div className="flex justify-center py-10">
+          <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       )}
     </section>
   );
 }
-
 
 ================================================================
 FILE: ./app/components/pages/ArticleListPage.tsx
@@ -2497,7 +2433,7 @@ function FeaturedRowCard({ article }: { article: Article }) {
       href={`/article/${article.slug}`}
       className="block group relative rounded-lg overflow-hidden"
     >
-      <div className="aspect-video">
+      <div className="relative aspect-video">
         <Image
           src={article.thumbnailUrl || article.imageUrl || ""}
           alt={article.title}
@@ -2859,23 +2795,23 @@ FILE: ./app/components/pages/Homepage/ArticleListPage/ArticleCard.tsx
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { Clock, BookOpen, User } from "lucide-react";
+import { Clock, BookOpen } from "lucide-react";
 import { Badge } from "@/app/components/ui/badge";
 import { Article } from "@/app/typing";
 import { formatRelativeTime } from "@/app/utils/dateUtils";
 
 export function ArticleCard({ article }: { article: Article }) {
-  // Mentor Note: Pastikan ada fallback image jika data thumbnailUrl kosong
-  const displayImage = article.thumbnailUrl || article.imageUrl || "https://placehold.co/600x400?text=No+Image";
-
+  const displayImage = article.thumbnailUrl || article.imageUrl || "https://placehold.co/600/400?text=Maenews";
+  
   return (
     <div className="group bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       <Link href={`/article/${article.slug}`} className="flex-1 flex flex-col">
         <div className="relative aspect-video overflow-hidden">
-          <Image
-            src={displayImage}
-            alt={article.title}
-            fill
+          <Image 
+            src={displayImage} 
+            alt={article.title} 
+            fill 
+            sizes="(max-width: 768px) 100vw, 33vw"
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             unoptimized
           />
@@ -2888,17 +2824,17 @@ export function ArticleCard({ article }: { article: Article }) {
           <p className="text-sm text-gray-500 line-clamp-2 mb-6 font-medium leading-relaxed">
             {article.excerpt}
           </p>
-
+          
           <div className="mt-auto pt-6 border-t border-gray-50 flex items-center justify-between text-[10px] font-black text-gray-400 uppercase tracking-widest">
             <div className="flex items-center gap-2 text-gray-700">
-              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[8px] font-bold">
-                {article.author.charAt(0)}
-              </div>
-              <span>{article.author}</span>
+               <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[8px] font-bold">
+                 {article.author?.charAt(0) || 'A'}
+               </div>
+               <span>{article.author}</span>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1"><Clock size={12} /> {formatRelativeTime(article.publishedAt)}</div>
-              <div className="flex items-center gap-1"><BookOpen size={12} /> {article.readTimeMinutes || 5} Min</div>
+               <div className="flex items-center gap-1"><Clock size={12} /> {formatRelativeTime(article.publishedAt)}</div>
+               <div className="flex items-center gap-1"><BookOpen size={12} /> {article.readTimeMinutes || 5} Min</div>
             </div>
           </div>
         </div>
@@ -3141,22 +3077,35 @@ import Link from "next/link";
 import { Button } from "../../ui/button";
 
 export function HeroSection({ article }: { article: Article }) {
+  if (!article) return null;
+  const heroImg = article.thumbnailUrl || article.imageUrl || "";
+
   return (
-    <section className="relative w-full h-[500px] md:h-[600px] rounded-[2.5rem] overflow-hidden group shadow-2xl bg-gray-900">
+    <section className="relative w-full h-[500px] md:h-[700px] rounded-[3rem] overflow-hidden group shadow-2xl bg-gray-900">
+      {/* FIX: Tambahkan properti 'priority' untuk SEO/LCP */}
       <Image
-        src={article.thumbnailUrl || ""}
+        src={heroImg}
         alt={article.title}
         fill
-        className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80"
         priority
+        sizes="100vw"
+        className="object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-      <div className="absolute bottom-0 left-0 p-8 md:p-16 max-w-4xl">
-        <span className="bg-primary text-white px-4 py-1 rounded-lg font-black italic uppercase text-xs mb-4 inline-block">HOT NEWS</span>
-        <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4 italic uppercase tracking-tighter">{article.title}</h1>
-        <p className="text-gray-200 text-lg mb-8 line-clamp-2 max-w-2xl font-medium">{article.excerpt}</p>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 p-8 md:p-20 max-w-5xl">
+        <div className="bg-primary text-white px-4 py-1.5 rounded-lg font-black italic uppercase text-xs mb-6 inline-block tracking-widest shadow-lg animate-bounce">
+          Breaking News
+        </div>
+        <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.05] mb-6 italic uppercase tracking-tighter drop-shadow-2xl">
+          {article.title}
+        </h1>
+        <p className="text-gray-200 text-lg md:text-xl mb-10 line-clamp-2 max-w-3xl font-medium opacity-90 leading-relaxed">
+          {article.excerpt}
+        </p>
         <Link href={`/article/${article.slug}`}>
-          <Button size="lg" className="rounded-full bg-white text-gray-900 hover:bg-primary hover:text-white font-black px-10 py-7 text-lg uppercase transition-all">Baca Selengkapnya</Button>
+          <Button size="lg" className="rounded-full bg-white text-gray-900 hover:bg-primary hover:text-white font-black px-12 py-8 text-xl uppercase transition-all duration-300 transform hover:translate-x-2">
+            Mulai Membaca →
+          </Button>
         </Link>
       </div>
     </section>
@@ -5109,40 +5058,29 @@ export const useApiEventDetail = (id: string) => {
 FILE: ./app/query/apiSearch.ts
 ================================================================
 import { useQuery } from "@tanstack/react-query";
-import { searchArticles, getUpcomingEvents } from "../lib/api";
+import { apiClient } from "../lib/apiClient";
+import { Article, Event } from "../typing";
+
+interface SearchResponse {
+  articles: Article[];
+  events: Event[];
+}
 
 export const useApiSearch = (query: string, filters?: { type: string; category: string }) => {
   return useQuery({
     queryKey: ["search", query, filters],
     queryFn: async () => {
-      const q = query.toLowerCase();
-
-      // Ambil data dari service (mendukung mock/live)
-      const [articlesData, eventsData] = await Promise.all([
-        searchArticles(query),
-        getUpcomingEvents()
-      ]);
-
-      // Filter logic yang robust
-      const filteredArticles = (articlesData ?? []).filter(a => {
-        const matchQuery = a.title.toLowerCase().includes(q) || a.excerpt.toLowerCase().includes(q);
-        const matchCat = !filters?.category || a.category === filters.category;
-        return matchQuery && matchCat;
+      const { data } = await apiClient.get<SearchResponse>("/search", {
+        params: {
+          q: query,
+          type: filters?.type !== "Semua" ? filters?.type : undefined,
+          category: filters?.category || undefined
+        }
       });
-
-      // Event tidak punya field "category", jadi kita match berdasarkan tags
-      const filteredEvents = (eventsData ?? []).filter(e => {
-        const matchQuery = e.title.toLowerCase().includes(q) || e.description.toLowerCase().includes(q);
-        const matchCat = !filters?.category || e.tags.some(t => t === filters.category);
-        return matchQuery && matchCat;
-      });
-
-      return {
-        articles: filteredArticles,
-        events: filteredEvents
-      };
+      return data;
     },
-    enabled: query.length > 0,
+    enabled: query.length > 0, 
+    staleTime: 1000 * 60 * 5, 
   });
 };
 
@@ -5853,6 +5791,24 @@ components:
 
 
 ================================================================
+FILE: ./docs/pc_feedback.md
+================================================================
+# 📋 Maenews Proof of Concept (POC) - Final Log
+
+## 🏁 Ringkasan Sprint Final
+Seluruh 104 task telah diimplementasikan dengan standar Next.js 14 App Router dan TanStack Query v5.
+
+## ✅ Fitur yang Diverifikasi (Review PO)
+1. **API Client**: Axios Interceptor sudah menangani global error logging.
+2. **Infinite Scroll**: Berhasil memuat data tambahan tanpa mengganggu layout utama.
+3. **Dynamic SEO**: Metadata artikel berubah secara dinamis sesuai judul berita.
+4. **Performance**: LCP Gambar utama sudah dioptimasi dengan property `priority`.
+
+## 📈 Rekomendasi Selanjutnya
+- Implementasi sistem Authentication (Task #105) di sprint berikutnya.
+- Optimasi asset gambar ke format .webp lewat backend.
+
+================================================================
 FILE: ./docs/swagger.html
 ================================================================
 <!DOCTYPE html>
@@ -6171,16 +6127,6 @@ const eslintConfig = [
 ];
 
 export default eslintConfig;
-
-
-================================================================
-FILE: ./next-env.d.ts
-================================================================
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
-
-// NOTE: This file should not be edited
-// see https://nextjs.org/docs/app/building-your-application/configuring/typescript for more information.
 
 
 ================================================================
@@ -7022,5 +6968,137 @@ FILE: ./public/favicon/site.webmanifest
 {"name":"","short_name":"","icons":[{"src":"/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
 
 ================================================================
-FILE: ./public/site.webmanifest
+FILE: ./tailwind.config.ts
 ================================================================
+/** @type {import('tailwindcss').Config} */
+import tailwindcssAnimate from "tailwindcss-animate";
+
+const config = {
+  darkMode: "class",
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  prefix: "",
+  theme: {
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
+      },
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+    },
+  },
+  plugins: [tailwindcssAnimate],
+};
+
+export default config;
+
+
+================================================================
+FILE: ./tsconfig.json
+================================================================
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "next.config.js"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
+}
+
+========================================
+  END OF FULL SOURCE CODE
+========================================

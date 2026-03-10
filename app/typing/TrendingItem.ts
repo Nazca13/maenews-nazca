@@ -6,4 +6,5 @@ export interface TrendingItem {
     slug: string;
     category: string;
     publishedAt: string;
+    imageUrl?: string;
 }

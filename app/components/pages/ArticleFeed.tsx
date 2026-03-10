@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import { Article } from "@/app/typing";
 import { LatestNewsArticle } from "@/app/components/article/LatestNewsArticle";
-import { Loader2, Flame } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export function ArticleFeed({ initialArticles, articlesToLoad }: { initialArticles: Article[], articlesToLoad: Article[] }) {
   const [page, setPage] = useState(0);
@@ -15,12 +15,12 @@ export function ArticleFeed({ initialArticles, articlesToLoad }: { initialArticl
   const loadMoreArticles = useCallback(() => {
     if (isLoading || !hasMore) return;
     setIsLoading(true);
-    
+
     setTimeout(() => {
       const start = page * 5;
       const end = start + 5;
       const newBatch = articlesToLoad.slice(start, end);
-      
+
       if (newBatch.length > 0) {
         setLoadedArticles((prev) => [...prev, ...newBatch]);
         setPage((prev) => prev + 1);
@@ -41,21 +41,16 @@ export function ArticleFeed({ initialArticles, articlesToLoad }: { initialArticl
   }, [isLoading, hasMore, loadMoreArticles]);
 
   return (
-    <section className="space-y-8">
-      <div className="flex items-center gap-2 mb-6">
-        <Flame className="w-6 h-6 text-primary" />
-        <h2 className="text-2xl font-black italic uppercase text-gray-900">Feed Terbaru</h2>
-      </div>
-
+    <section className="space-y-6">
+      {/* No title — this is a continuation of the TERBARU section above */}
       <div className="flex flex-col gap-6">
-        {/* FIX: Gunakan prefix unik agar key tidak bentrok dengan list lain */}
         {initialArticles.map((article, idx) => (
           <LatestNewsArticle key={`feed-init-${article.id}-${idx}`} article={article} />
         ))}
-        
+
         {loadedArticles.map((article, index) => (
-          <div 
-            key={`feed-load-${article.id}-${index}`} 
+          <div
+            key={`feed-load-${article.id}-${index}`}
             ref={loadedArticles.length === index + 1 ? lastElementRef : null}
           >
             <LatestNewsArticle article={article} />
