@@ -4,13 +4,12 @@ interface ArticleContentProps {
 
 export function ArticleContent({ htmlContent }: ArticleContentProps) {
   return (
-    <div 
-      className="prose prose-lg max-w-none 
-        prose-headings:font-black prose-headings:italic prose-headings:uppercase prose-headings:tracking-tighter
-        prose-p:text-gray-700 prose-p:leading-relaxed
-        prose-blockquote:border-l-primary prose-blockquote:bg-gray-50 prose-blockquote:py-2 prose-blockquote:px-6
-        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-        prose-img:shadow-sm"
+    <div
+      className="prose prose-base max-w-none
+        prose-headings:font-bold prose-headings:text-[#090909] prose-headings:text-lg prose-headings:mt-6 prose-headings:mb-3
+        prose-p:text-[#4A4A4A] prose-p:leading-relaxed prose-p:text-sm prose-p:mb-4
+        prose-strong:font-bold
+        prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
       dangerouslySetInnerHTML={{ __html: htmlContent }}
     />
   );

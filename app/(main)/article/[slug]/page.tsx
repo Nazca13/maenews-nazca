@@ -8,7 +8,6 @@ type Props = {
   params: { slug: string };
 };
 
-// Task #76: Dynamic Metadata — judul tab browser berubah sesuai artikel
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const article = await getArticleBySlug(params.slug);
   if (!article) {
@@ -21,23 +20,37 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Props) {
-  const article = await getArticleBySlug(params.slug);
+  const [article, allArticles, trendingItems, upcomingEvents] = await Promise.all([
+    getArticleBySlug(params.slug),
+    getAllArticles(),
+    getTrendingItems(),
+    getUpcomingEvents(),
+  ]);
 
   if (!article) {
     notFound();
   }
 
-  // Ambil semua artikel untuk cari yang terkait (kategori sama, bukan artikel ini)
-  const allArticles = await getAllArticles();
-  const related = (allArticles ?? [])
+  // Artikel terkait: kategori sama, bukan artikel ini, max 4
+  const relatedArticles = (allArticles ?? [])
     .filter((a) => a.category === article.category && a.slug !== article.slug)
     .slice(0, 4);
+
+  // Artikel rekomendasi: semua artikel selain ini, max 6
+  const recommendationArticles = (allArticles ?? [])
+    .filter((a) => a.slug !== article.slug)
+    .slice(0, 6);
 
   return (
     <>
       <ArticleViewTracker slug={params.slug} />
-      <ArticleDetailPage article={article} related={related} />
+      <ArticleDetailPage
+        article={article}
+        relatedArticles={relatedArticles}
+        recommendationArticles={recommendationArticles}
+        trendingItems={trendingItems ?? []}
+        upcomingEvents={upcomingEvents ?? []}
+      />
     </>
   );
 }
-
