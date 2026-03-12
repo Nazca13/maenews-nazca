@@ -27,7 +27,7 @@ export function Sidebar({ trendingItems, upcomingEvents }: SidebarProps) {
             >
               <div className="flex gap-3">
                 {/* Thumbnail */}
-                <div className="w-[80px] h-[60px] rounded-lg flex-shrink-0 overflow-hidden bg-[#090909] relative">
+                <div className="w-[80px] h-[60px] flex-shrink-0 overflow-hidden bg-[#090909] relative">
                   <Image
                     src={item.imageUrl || `https://placehold.co/100x100/ffedd5/fb923c?text=${item.category.charAt(0)}`}
                     alt={item.title}
@@ -65,7 +65,7 @@ export function Sidebar({ trendingItems, upcomingEvents }: SidebarProps) {
             >
               <div className="flex gap-3">
                 {/* Thumbnail */}
-                <div className="w-[80px] h-[60px] rounded-lg flex-shrink-0 overflow-hidden bg-[#090909] relative">
+                <div className="w-[80px] h-[60px] flex-shrink-0 overflow-hidden bg-[#090909] relative">
                   <Image
                     src={event.thumbnailUrl || `https://placehold.co/100x100/f3e8ff/c084fc?text=Event`}
                     alt={event.title}

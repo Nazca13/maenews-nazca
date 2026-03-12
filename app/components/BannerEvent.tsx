@@ -60,7 +60,7 @@ export function EventBanner({ events }: EventBannerProps) {
   if (!activeEvent) return null;
 
   return (
-    <section className="bg-white rounded-2xl shadow-sm border border-gray-100 px-6 py-6 sm:py-8">
+    <section className="bg-white shadow-sm border border-gray-100 px-6 py-6 sm:py-8">
       {/* Event Title & Location */}
       <div className="flex items-center justify-center gap-2 mb-4">
         <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -96,7 +96,7 @@ export function EventBanner({ events }: EventBannerProps) {
           </div>
           <a
             href={`/event/${activeEvent.slug}`}
-            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-primary border-2 border-primary rounded-full hover:bg-primary hover:text-white transition-all duration-200 uppercase tracking-wider"
+            className="inline-flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-primary border-2 border-primary hover:bg-primary hover:text-white transition-all duration-200 uppercase tracking-wider"
           >
             Lihat Detail Event
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

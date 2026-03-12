@@ -20,7 +20,7 @@ export function ArticleHeader({ article }: { article: Article }) {
         <div className="flex items-center gap-2"><BookOpen size={14} /> {article.readTimeMinutes || 5} Min Read</div>
       </div>
       {/* FIX: Tambahkan property priority dan wrapper relative */}
-      <div className="relative aspect-video rounded-[3rem] overflow-hidden shadow-2xl bg-gray-100">
+      <div className="relative aspect-video overflow-hidden shadow-2xl bg-gray-100">
         <Image 
           src={article.thumbnailUrl || article.imageUrl || ""} 
           alt={article.title} 

@@ -79,7 +79,7 @@ export function Header() {
               />
               <button
                 onClick={handleSearchSubmit}
-                className="h-8 w-8 flex items-center justify-center bg-primary flex-shrink-0 hover:bg-[#e56200] transition-colors cursor-pointer rounded-r-full"
+                className="h-8 w-8 flex items-center justify-center bg-primary flex-shrink-0 hover:bg-[#e56200] transition-colors cursor-pointer"
                 aria-label="Search"
               >
                 <img src="/icon/search-icon.svg" alt="Search" width={14} height={14} />
@@ -150,7 +150,7 @@ export function Header() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setIsOpen(false)}
-                  className={`px-3 py-2.5 rounded-lg text-sm font-bold uppercase transition-colors duration-200 ${isActive(item.href)
+                  className={`px-3 py-2.5 text-sm font-bold uppercase transition-colors duration-200 ${isActive(item.href)
                     ? "text-primary bg-primary/5"
                     : "text-[#090909] hover:bg-gray-50"
                     }`}

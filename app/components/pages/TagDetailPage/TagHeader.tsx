@@ -10,7 +10,7 @@ interface TagHeaderProps {
 
 export function TagHeader({ name, category, description, count }: TagHeaderProps) {
   return (
-    <header className="relative w-full rounded-[3rem] overflow-hidden bg-gray-900 mb-12 shadow-2xl">
+    <header className="relative w-full overflow-hidden bg-gray-900 mb-12 shadow-2xl">
       <div className="absolute inset-0 opacity-30">
         <Image src={`https://picsum.photos/seed/${name}/1200/400`} alt="Banner" fill className="object-cover" />
       </div>
@@ -22,7 +22,7 @@ export function TagHeader({ name, category, description, count }: TagHeaderProps
           #{name}
         </h1>
         <p className="text-gray-300 max-w-2xl mx-auto font-medium mb-6">{description}</p>
-        <div className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md rounded-full text-xs font-black text-white uppercase tracking-widest">
+        <div className="inline-block px-6 py-2 bg-white/10 backdrop-blur-md text-xs font-black text-white uppercase tracking-widest">
           Total {count} Konten Terkait
         </div>
       </div>

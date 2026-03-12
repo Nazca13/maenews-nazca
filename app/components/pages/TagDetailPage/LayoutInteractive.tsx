@@ -13,9 +13,9 @@ export function LayoutInteractive({ articles }: { articles: Article[] }) {
                 <motion.div
                     key={item.id}
                     whileHover={{ x: 10 }}
-                    className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 items-center"
+                    className="bg-white p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 items-center"
                 >
-                    <div className="w-full md:w-1/3 aspect-video relative rounded-3xl overflow-hidden bg-gray-100">
+                    <div className="w-full md:w-1/3 aspect-video relative overflow-hidden bg-gray-100">
                         <Image src={item.thumbnailUrl || ""} alt={item.title} fill className="object-cover" />
                     </div>
                     <div className="flex-1 space-y-4">
@@ -31,7 +31,7 @@ export function LayoutInteractive({ articles }: { articles: Article[] }) {
                                 <span>Progress Belajar</span>
                                 <span className="text-primary">65%</span>
                             </div>
-                            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="w-full h-3 bg-gray-100 overflow-hidden">
                                 <motion.div initial={{ width: 0 }} animate={{ width: "65%" }} className="h-full bg-primary" />
                             </div>
                         </div>

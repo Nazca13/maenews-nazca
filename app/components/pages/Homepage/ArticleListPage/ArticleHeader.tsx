@@ -24,7 +24,7 @@ export function ArticleHeader({ article }: { article: Article }) {
                 <span>•</span>
                 <div className="flex items-center gap-2"><Clock size={16} /> {new Date(article.publishedAt).toLocaleDateString()}</div>
             </div>
-            <div className="relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl">
+            <div className="relative aspect-video overflow-hidden shadow-2xl">
                 <Image src={article.thumbnailUrl || article.imageUrl || ""} alt={article.title} fill className="object-cover" priority />
             </div>
         </header>

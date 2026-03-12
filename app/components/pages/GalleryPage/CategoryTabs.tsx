@@ -9,7 +9,7 @@ export function CategoryTabs({ active, onSelect }: { active: string, onSelect: (
         <button
           key={cat}
           onClick={() => onSelect(cat)}
-          className={`px-8 py-3 rounded-2xl font-black uppercase italic tracking-tighter transition-all border-2
+          className={`px-8 py-3 font-black uppercase italic tracking-tighter transition-all border-2
             ${active === cat 
               ? "bg-primary border-primary text-white shadow-lg shadow-primary/30 scale-105" 
               : "bg-white border-gray-100 text-gray-400 hover:border-primary hover:text-primary"}`}

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function AuthorCard({ author }: { author: string }) {
   return (
-    <div className="bg-gray-50 rounded-[2.5rem] p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-gray-100 mt-16 shadow-inner">
+    <div className="bg-gray-50 p-8 md:p-10 flex flex-col md:flex-row items-center gap-8 border border-gray-100 mt-16 shadow-inner">
       <Avatar name={author} className="w-24 h-24 text-2xl shadow-xl shadow-primary/20 border-4 border-white" />
       <div className="text-center md:text-left flex-1">
         <span className="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-2 block">Ditulis Oleh</span>

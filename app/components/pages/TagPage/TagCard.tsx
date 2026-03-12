@@ -5,7 +5,7 @@ import { Tag } from "@/app/typing";
 export function TagCard({ tag }: { tag: Tag }) {
   return (
     <Link href={`/tag/${tag.slug}`}>
-      <div className="bg-white border border-gray-100 rounded-[2rem] p-6 hover:shadow-xl transition-all group">
+      <div className="bg-white border border-gray-100 p-6 hover:shadow-xl transition-all group">
         <div className="flex justify-between items-start mb-4">
           <TagCategoryBadge category={tag.category} />
           <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{tag.articleCount} Artikel</span>

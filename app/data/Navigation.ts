@@ -4,7 +4,7 @@ import { NavItem } from "@/app/typing";
 export const navItems: NavItem[] = [
     { label: "Beranda", href: "/" },
     { label: "Anime", href: "/category/anime" },
-    { label: "Creator", href: "/category/content-creator" },
+    { label: "Creator", href: "/category/creator" },
     { label: "Event", href: "/event" },
     { label: "Gaming", href: "/category/gaming" },
     { label: "Cosplay", href: "/category/cosplay" },

@@ -10,7 +10,7 @@ export function ArticleCard({ article }: { article: Article }) {
   const displayImage = article.thumbnailUrl || article.imageUrl || "https://placehold.co/600/400?text=Maenews";
   
   return (
-    <div className="group bg-white rounded-[2.5rem] border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
+    <div className="group bg-white border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       <Link href={`/article/${article.slug}`} className="flex-1 flex flex-col">
         <div className="relative aspect-video overflow-hidden">
           <Image 

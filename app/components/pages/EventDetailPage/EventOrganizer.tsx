@@ -3,9 +3,9 @@ import { Globe, Mail } from "lucide-react";
 
 export function EventOrganizer() {
   return (
-    <div className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 mt-12">
+    <div className="bg-gray-50 p-8 border border-gray-100 mt-12">
       <div className="flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-        <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white p-2 shadow-md border-4 border-white">
+        <div className="relative w-24 h-24 overflow-hidden bg-white p-2 shadow-md border-4 border-white">
           <Image 
             src="https://picsum.photos/seed/organizer/200" 
             alt="Logo Organizer" 

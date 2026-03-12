@@ -19,7 +19,7 @@ export function CategoryFilter({ onCategoryChange }: { onCategoryChange: (cat: s
         <Badge
           key={cat}
           variant={active === cat ? "default" : "outline"}
-          className="cursor-pointer px-6 py-2 text-sm rounded-full transition-all"
+          className="cursor-pointer px-6 py-2 text-sm transition-all"
           onClick={() => handleSelect(cat)}
         >
           {cat}

@@ -9,7 +9,7 @@ function FeaturedRowCard({ article }: { article: Article }) {
   return (
     <Link
       href={`/article/${article.slug}`}
-      className="block group relative rounded-lg overflow-hidden"
+      className="block group relative overflow-hidden"
     >
       <div className="relative aspect-video">
         <Image

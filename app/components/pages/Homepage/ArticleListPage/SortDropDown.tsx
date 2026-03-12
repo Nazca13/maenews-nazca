@@ -10,7 +10,7 @@ export function SortDropdown({ onSortChange }: SortDropdownProps) {
       <label className="text-xs font-black uppercase text-gray-400 tracking-widest">Urutkan:</label>
       <select 
         onChange={(e) => onSortChange(e.target.value)}
-        className="bg-white border rounded-xl px-4 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+        className="bg-white border px-4 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
       >
         <option value="newest">Terbaru</option>
         <option value="popular">Terpopuler</option>

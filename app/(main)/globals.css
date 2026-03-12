@@ -13,11 +13,11 @@
     --gray-custom: #A6A6A6;
     --font-adlam: 'ADLaM Display', cursive;
   }
+}
 
-  /* Apply ADLaM Display to site headings for brand look */
-  .font-adlam {
-    font-family: var(--font-adlam);
-  }
+/* ADLaM Display font — defined OUTSIDE @layer so it always wins specificity */
+.font-adlam {
+  font-family: 'ADLaM Display', cursive !important;
 }
 
 @layer utilities {
@@ -114,5 +114,14 @@
 }
 
 .scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* No-scrollbar utility (alias) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }

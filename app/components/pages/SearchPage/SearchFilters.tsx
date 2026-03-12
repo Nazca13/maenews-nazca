@@ -39,7 +39,7 @@ export function SearchFilters({ type, category, onTypeChange, onCategoryChange }
         <select 
           value={category}
           onChange={(e) => onCategoryChange(e.target.value)}
-          className="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full bg-gray-50 border-0 px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-primary/20"
         >
           {categories.map(cat => <option key={cat} value={cat === "Semua" ? "" : cat}>{cat}</option>)}
         </select>

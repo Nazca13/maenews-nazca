@@ -9,8 +9,8 @@ interface HeroSidebarItemProps {
 export function HeroSidebarItem({ article }: HeroSidebarItemProps) {
   return (
     <Link href={`/article/${article.slug}`} className="block group">
-      <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-700/50 transition-colors duration-200">
-        <div className="relative w-20 h-14 flex-shrink-0 rounded-md overflow-hidden">
+      <div className="flex items-center gap-3 p-2 hover:bg-gray-700/50 transition-colors duration-200">
+        <div className="relative w-20 h-14 flex-shrink-0 overflow-hidden">
           <Image
             src={article.thumbnailUrl || article.imageUrl || ""}
             alt={article.title}

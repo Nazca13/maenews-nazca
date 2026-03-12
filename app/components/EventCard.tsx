@@ -11,7 +11,7 @@ interface EventCardProps {
 
 export function EventCard({ event }: EventCardProps) {
   return (
-    <Link href={`/event/${event.slug}`} className="block group bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+    <Link href={`/event/${event.slug}`} className="block group bg-white shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
       <div className="relative w-full aspect-video">
         <Image
           src={event.thumbnailUrl}

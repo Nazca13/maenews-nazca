@@ -8,7 +8,7 @@ export function HeroSection({ article }: { article: Article }) {
   const heroImg = article.thumbnailUrl || article.imageUrl || "";
 
   return (
-    <section className="relative w-full h-[500px] md:h-[700px] rounded-[3rem] overflow-hidden group shadow-2xl bg-gray-900">
+    <section className="relative w-full h-[500px] md:h-[700px] overflow-hidden group shadow-2xl bg-gray-900">
       {/* FIX: Tambahkan properti 'priority' untuk SEO/LCP */}
       <Image
         src={heroImg}
@@ -20,7 +20,7 @@ export function HeroSection({ article }: { article: Article }) {
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
       <div className="absolute bottom-0 left-0 p-8 md:p-20 max-w-5xl">
-        <div className="bg-primary text-white px-4 py-1.5 rounded-lg font-black italic uppercase text-xs mb-6 inline-block tracking-widest shadow-lg animate-bounce">
+        <div className="bg-primary text-white px-4 py-1.5 font-black italic uppercase text-xs mb-6 inline-block tracking-widest shadow-lg animate-bounce">
           Breaking News
         </div>
         <h1 className="text-4xl md:text-7xl font-black text-white leading-[1.05] mb-6 italic uppercase tracking-tighter drop-shadow-2xl">
@@ -30,7 +30,7 @@ export function HeroSection({ article }: { article: Article }) {
           {article.excerpt}
         </p>
         <Link href={`/article/${article.slug}`}>
-          <Button size="lg" className="rounded-full bg-white text-gray-900 hover:bg-primary hover:text-white font-black px-12 py-8 text-xl uppercase transition-all duration-300 transform hover:translate-x-2">
+          <Button size="lg" className="bg-white text-gray-900 hover:bg-primary hover:text-white font-black px-12 py-8 text-xl uppercase transition-all duration-300 transform hover:translate-x-2">
             Mulai Membaca →
           </Button>
         </Link>

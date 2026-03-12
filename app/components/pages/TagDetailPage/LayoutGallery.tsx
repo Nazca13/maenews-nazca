@@ -11,7 +11,7 @@ export function LayoutGallery({ items }: { items: GalleryItem[] }) {
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {items.map((item, i) => (
-          <GalleryCard key={item.id} item={item} onClick={() => setIndex(i)} />
+          <GalleryCard key={item.id} item={item} index={i} onClick={() => setIndex(i)} />
         ))}
       </div>
       {index !== null && (

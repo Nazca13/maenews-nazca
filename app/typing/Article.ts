@@ -14,4 +14,5 @@ export interface Article {
   readTimeMinutes?: number;
   featured?: boolean;
   views?: number;
+  shares?: number;
 }

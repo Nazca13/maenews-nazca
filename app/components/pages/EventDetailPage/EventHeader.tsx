@@ -8,7 +8,7 @@ export function EventHeader({ event }: { event: Event }) {
     <header className="mb-10">
       <Breadcrumb items={[{ label: "Event", href: "/event" }, { label: event.title, href: "#" }]} />
       
-      <div className="mt-8 relative aspect-video rounded-[2.5rem] overflow-hidden shadow-2xl group bg-gray-900">
+      <div className="mt-8 relative aspect-video overflow-hidden shadow-2xl group bg-gray-900">
         <Image 
           src={event.thumbnailUrl} 
           alt={event.title} 

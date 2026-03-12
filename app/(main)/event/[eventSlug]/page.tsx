@@ -19,7 +19,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <div className="bg-white shadow-md overflow-hidden">
         <div className="relative w-full h-64 md:h-96">
           <Image
             src={event.thumbnailUrl}

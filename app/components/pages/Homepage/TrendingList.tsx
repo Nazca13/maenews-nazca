@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function TrendingList({ items }: { items: TrendingItem[] }) {
   return (
-    <div className="bg-white rounded-3xl p-6 border shadow-sm">
+    <div className="bg-white p-6 border shadow-sm">
       <h3 className="text-xl font-black mb-6 italic uppercase border-b-4 border-primary inline-block tracking-tight text-gray-900">Trending Sekarang</h3>
       <div className="flex flex-col gap-6">
         {items.slice(0, 5).map((item, i) => (

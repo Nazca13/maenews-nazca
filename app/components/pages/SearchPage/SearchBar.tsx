@@ -23,7 +23,7 @@ export function SearchBar({ count, onSearch }: { count: number, onSearch: (query
           value={inputValue} 
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Cari anime, event, atau berita kultur pop..."
-          className="w-full bg-gray-50 border-0 rounded-[2rem] py-7 px-16 text-xl font-bold outline-none focus:ring-8 focus:ring-primary/10 transition-all placeholder:text-gray-300"
+          className="w-full bg-gray-50 border-0 py-7 px-16 text-xl font-bold outline-none focus:ring-8 focus:ring-primary/10 transition-all placeholder:text-gray-300"
         />
         
         {/* Search Icon */}

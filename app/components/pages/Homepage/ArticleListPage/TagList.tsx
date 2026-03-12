@@ -7,7 +7,7 @@ export function TagList({ tags }: { tags: string[] }) {
         <div className="flex flex-wrap gap-2 mt-8">
             {tags.map((tag) => (
                 <Link key={tag} href={`/tag/${slugify(tag)}`}>
-                    <Badge variant="outline" className="px-5 py-2 rounded-full border-2 hover:bg-primary hover:text-white hover:border-primary transition-all font-bold cursor-pointer">
+                    <Badge variant="outline" className="px-5 py-2 border-2 hover:bg-primary hover:text-white hover:border-primary transition-all font-bold cursor-pointer">
                         #{tag}
                     </Badge>
                 </Link>
