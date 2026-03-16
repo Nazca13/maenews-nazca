@@ -35,7 +35,7 @@ export function Header() {
 
       {/* Main Nav Bar */}
       <nav className="bg-white">
-        <div className="container mx-auto px-4 lg:px-[150px] flex items-center justify-between h-16">
+        <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 flex items-center gap-1.5">
             <img

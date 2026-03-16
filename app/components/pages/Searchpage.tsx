@@ -13,7 +13,7 @@ export function SearchPage() {
   const hasResults = results.articles.length > 0 || results.events.length > 0;
 
   return (
-    <main className="container mx-auto px-4 py-12 min-h-screen">
+    <main className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-12 min-h-screen">
       <SearchBar count={results.articles.length + results.events.length} onSearch={setQuery} />
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">

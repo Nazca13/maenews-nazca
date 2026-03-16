@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="w-full bg-white border-t border-gray-100">
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 lg:px-[150px] py-10">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Column 1: Logo & About */}
           <div>
@@ -86,7 +86,7 @@ export function Footer() {
 
       {/* Bottom Bar — Orange Copyright */}
       <div className="bg-primary">
-        <div className="container mx-auto px-4 lg:px-[150px] py-3">
+        <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-3">
           <div className="flex flex-col md:flex-row items-center justify-between gap-2">
             <div className="flex items-center gap-4 text-[10px] text-white/80">
               <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>

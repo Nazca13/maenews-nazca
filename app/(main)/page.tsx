@@ -42,13 +42,13 @@ export default async function HomePage() {
       <Hero featuredArticle={featuredArticle} articles={heroSidebarArticles} />
 
       {/* 2. Event Countdown Timer */}
-      <div className="container mx-auto px-4 lg:px-[150px] py-4">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-4">
         <EventBanner events={upcomingEvents ?? []} />
       </div>
 
       {/* 3. Terbaru + Sidebar */}
-      <div className="container mx-auto px-4 lg:px-[150px] py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-10">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_340px] gap-8 lg:gap-10">
           <div>
             <LatestNewsSection title="Terbaru" articles={latestArticles} />
           </div>
@@ -65,8 +65,8 @@ export default async function HomePage() {
       <SliderNews articles={recommendationArticles} title="Rekomendasi" />
 
       {/* 5. More Articles After Rekomendasi */}
-      <div className="container mx-auto px-4 lg:px-[150px] py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-10">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_340px] gap-8 lg:gap-10">
           <div>
             <ArticleFeed
               initialArticles={afterRecommendationArticles}

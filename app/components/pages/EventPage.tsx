@@ -8,7 +8,7 @@ import { PaginationControls } from "../ui/PaginationControls";
 export function EventPage({ events }: { events: Event[] }) {
   return (
     <main className="container mx-auto px-4 py-10">
-      <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gray-900 mb-10">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black italic uppercase tracking-tighter text-gray-900 mb-10">
         Kalender <span className="text-primary">Event</span>
       </h1>
       <EventFilter />

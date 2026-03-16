@@ -37,7 +37,7 @@ export function SliderNews({ articles, title }: SliderNewsProps) {
 
   return (
     <section className="bg-white py-8 sm:py-10">
-      <div className="container mx-auto px-4 lg:px-[150px]">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px]">
         <div className="flex items-center gap-2 mb-5">
           <img src="/icon/recomendation-icon.svg" alt="" width={22} height={22} />
           <h2 className="text-lg font-black uppercase text-primary tracking-wide font-adlam">
@@ -79,7 +79,7 @@ export function SliderNews({ articles, title }: SliderNewsProps) {
           className="flex gap-[2px] overflow-x-auto scrollbar-hide scroll-smooth"
           style={{
             scrollSnapType: "x mandatory",
-            paddingLeft: "max(16px, 150px)",
+            paddingLeft: "max(16px, calc((100vw - 1400px) / 2 + 150px))",
           }}
         >
           {articles.map((article) => {

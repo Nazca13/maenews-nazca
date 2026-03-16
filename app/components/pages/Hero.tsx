@@ -52,7 +52,7 @@ export const Hero: React.FC<HeroProps> = ({ featuredArticle, articles }) => {
   };
 
   return (
-    <section className="container mx-auto px-4 lg:px-[150px] py-2">
+    <section className="container mx-auto px-4 lg:px-8 xl:px-[150px] py-2">
       {/* Mobile Slider */}
       <div className="md:hidden">
         <div className="relative overflow-hidden">
@@ -98,7 +98,7 @@ export const Hero: React.FC<HeroProps> = ({ featuredArticle, articles }) => {
           |                  | card   | card     |
           +------------------+--------+----------+
       */}
-      <div className="hidden md:grid h-[480px] overflow-hidden gap-[3px]"
+      <div className="hidden md:grid h-[320px] lg:h-[400px] xl:h-[480px] overflow-hidden gap-[3px]"
         style={{
           gridTemplateColumns: "1fr 1fr",
           gridTemplateRows: "1fr 1fr",

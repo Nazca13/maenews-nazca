@@ -32,7 +32,7 @@ export function ArticleDetailPage({
       <ReadingProgress />
 
       {/* Breadcrumb */}
-      <div className="container mx-auto px-4 lg:px-[150px] pt-4 pb-2">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pt-4 pb-2">
         <Breadcrumb
           items={[
             { label: article.category, href: `/category/${article.category.toLowerCase()}` },
@@ -42,8 +42,8 @@ export function ArticleDetailPage({
       </div>
 
       {/* Two-column layout: Content + Sidebar */}
-      <div className="container mx-auto px-4 lg:px-[150px] pb-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-10">
+      <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_340px] gap-8 lg:gap-10">
           {/* LEFT COLUMN — Article Content */}
           <div>
             {/* Header: Title + Date + Image */}

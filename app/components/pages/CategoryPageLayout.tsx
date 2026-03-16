@@ -29,12 +29,12 @@ export function CategoryPageLayout({
     return (
         <>
             {/* Breadcrumb */}
-            <div className="container mx-auto px-4 lg:px-[150px] pt-4 pb-2">
+            <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pt-4 pb-2">
                 <Breadcrumb items={[{ label: categoryName, href: "#" }]} />
             </div>
 
             {/* Headline — centered, orange, uppercase, with underline */}
-            <div className="container mx-auto px-4 lg:px-[150px] pt-2 pb-4">
+            <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pt-2 pb-4">
                 <div className="flex flex-col items-center">
                     <h1 className="text-2xl sm:text-3xl font-black uppercase text-primary tracking-wider font-adlam">
                         {categoryName}
@@ -45,7 +45,7 @@ export function CategoryPageLayout({
 
             {/* 3-Card Carousel */}
             {carouselArticles.length > 0 && (
-                <div className="container mx-auto px-4 lg:px-[150px] pb-4">
+                <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pb-4">
                     <div
                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[3px] overflow-hidden"
                     >
@@ -63,13 +63,13 @@ export function CategoryPageLayout({
             )}
 
             {/* Orange separator line */}
-            <div className="container mx-auto px-4 lg:px-[150px] pb-6">
+            <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pb-6">
                 <div className="h-[3px] bg-primary w-full" />
             </div>
 
             {/* Terbaru + Sidebar */}
-            <div className="container mx-auto px-4 lg:px-[150px] pb-8">
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 lg:gap-10">
+            <div className="container mx-auto px-4 lg:px-8 xl:px-[150px] pb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] xl:grid-cols-[1fr_340px] gap-8 lg:gap-10">
                     {/* Left — Articles */}
                     <div>
                         {terbaruArticles.length > 0 && (

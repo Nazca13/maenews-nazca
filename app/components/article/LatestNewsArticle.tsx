@@ -17,7 +17,7 @@ export function LatestNewsArticle({ article, priority = false }: { article: Arti
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
       >
         {/* Article Image */}
-        <div className="relative w-[120px] h-[90px] sm:w-[240px] sm:h-[160px] shrink-0 overflow-hidden bg-[#090909]">
+        <div className="relative w-[120px] h-[90px] sm:w-[180px] sm:h-[120px] md:w-[240px] md:h-[160px] shrink-0 overflow-hidden bg-[#090909]">
           <Image
             src={displayImg}
             alt={article.title}
