@@ -1,117 +1,123 @@
 # 🏛️ Maenews — Architecture & Development Guidelines
+This document defines the architecture of **Maenews** (Frontend Next.js 14 App Router) and guidelines for both frontend developers and backend developers transitioning the application from **Mock Mode** to a **Real REST API Backend**.
 
-## 📁 Struktur Folder
+---
 
-Berikut peta folder utama di dalam direktori `app/` (tanpa folder `src`):
+## 📁 Folder Structure
 
-| Folder | Deskripsi |
+Here is the folder mapping for both the public-facing site and the CMS Admin Panel inside the `app/` directory:
+
+| Folder | Description |
 |---|---|
-| `app/components/layout/` | Komponen global pembungkus konten — `Header`, `Footer`, `Sidebar`, `ClientLayout` |
-| `app/components/ui/` | Komponen atomik reusable — `Button`, `Input`, `Badge`, `Card`, dll. |
-| `app/components/pages/` | Komponen besar spesifik per halaman — `Hero`, `ArticleFeed`, `CategoryPageLayout` |
-| `app/components/article/` | Komponen terkait tampilan artikel — `ArticleDetail`, `LatestNewsSection` |
-| `app/components/slider/` | Komponen carousel — `SliderNews` |
-| `app/components/gallery/` | Komponen galeri — `GalleryCard`, `Lightbox` |
-| `app/typing/` | Definisi tipe TypeScript per entitas: `Article.ts`, `Event.ts`, `GalleryItem.ts`, `TrendingItem.ts`, dll. Index re-export di `index.ts` |
-| `app/lib/` | Konfigurasi API fetcher (`api.ts`), Axios instance (`apiClient.ts`), helper (`utils.ts`) |
-| `app/query/` | TanStack Query fetchers per fitur — `apiArticles.ts`, `apiEvents.ts`, `apiSearch.ts`, `apiTags.ts` |
-| `app/data/mocks-data/` | Fixture/mock data per entitas — `mockArticles.ts`, `mockEvents.ts`, dll. |
-| `app/data/` | Data statis konfigurasi — `Navigation.ts` |
-| `app/hooks/` | Custom React Hooks — `useArticles.ts`, `useEvents.ts`, `useSearch.ts`, `useMobile.ts` |
-| `app/utils/` | Pure utility functions — `dateUtils.ts` |
+| `app/(admin)/` | **CMS Admin Routing Group**: Isolated routing group protected by NextAuth middleware. |
+| `app/admin/category/` | Category management featuring a bento layout and inline editing modals. |
+| `app/admin/tag/` | Tag management featuring a bento layout and inline editing modals. |
+| `app/components/layout/` | Public layout components (`Header`, `Footer`, `Sidebar`, `ClientLayout`). |
+| `app/components/layout/admin/` | Admin-specific layout components (`AdminSidebar`, `AdminHeader`). |
+| `app/components/ui/admin/` | Admin reusable UI items (`DataTable`, `ConfirmModal`, `FormPageHeader`). |
+| `app/components/pages/admin/` | Modular admin sub-pages (Article Editor, Event Forms, Gallery Grid, Settings Forms). |
+| `app/typing/` | TypeScript types per entity (`Article.ts`, `Event.ts`, `Admin.ts`, etc.) re-exported via `index.ts`. |
+| `app/lib/db.ts` | **Shared In-Memory Database**: Singleton state orchestrating mock mutations across frontend & admin. |
+| `app/lib/api.ts` | Public-facing fetcher supporting Strategy Pattern (Mock / Live mode). |
+| `app/lib/adminApi.ts` | Admin CMS CRUD fetcher supporting Strategy Pattern (Mock / Live mode). |
+| `app/lib/auth.ts` | Credentials authentication logic and local validation rules for NextAuth. |
+| `app/query/` | TanStack Query v5 hooks/queries for client-side asynchronous state fetching. |
+| `app/data/` | Static navigations and configuration arrays (`Navigation.ts`, `mocks-data.ts`). |
 
 ---
 
-## 🔌 API Layer (`app/lib/api.ts`)
+## 🔌 API Layer & Strategy Pattern
 
-API service menggunakan **Strategy Pattern** untuk switch antara mock dan live mode tanpa mengubah kode komponen:
+Both the client API (`app/lib/api.ts`) and CMS API (`app/lib/adminApi.ts`) implement the **Strategy Pattern**. You can switch the entire application between offline/mock and live backend modes by altering the environment variables in `.env.local`:
 
-```
-NEXT_PUBLIC_API_MODE=mock  →  Data dari app/data/mocks-data/
-NEXT_PUBLIC_API_MODE=live  →  Fetch dari REST API (Golang backend)
-```
+```env
+# Mode: 'mock' (local testing) or 'live' (real backend API)
+NEXT_PUBLIC_API_MODE=mock
 
-Lihat `.env.example` untuk konfigurasi dan `docs/openapi.yaml` untuk API contract.
-
-### Alur Data (Live Mode)
-```
-Page (SSR/SSG) → lib/api.ts (active service) → apiClient.ts (Axios) → REST API
-                       ↓
-              query/ (TanStack Query)  ← Client-side fetching
+# Live API endpoint (Golang backend)
+NEXT_PUBLIC_API_BASE_URL=https://golang-maenews-animae-id2569-ksgm0g96.leapcell.dev/api/v1
 ```
 
----
+### Data Flow diagram (Mock vs Live)
 
-## 🔬 TypeScript Types (`app/typing/`)
-
-Semua interface didefinisikan di folder ini dan di-export melalui `index.ts` (barrel file).
-
-| File | Interface | Field Utama |
-|---|---|---|
-| `Article.ts` | `Article` | `id`, `title`, `slug`, `content`, `author`, `tags`, `category`, `featured`, `views` |
-| `Event.ts` | `Event` | `id`, `title`, `slug`, `location`, `startDate`, `endDate`, `status`, `organizer` |
-| `GalleryItem.ts` | `GalleryItem` | `id`, `title`, `type` (image/video), `url`, `thumbnailUrl`, `category` |
-| `TrendingItem.ts` | `TrendingItem` | Trending article metadata |
-| `Author.ts` | `Author` | Author profile |
-| `Api.ts` | `ApiConfig`, `ApiMode` | API configuration types |
-| `Navigation.ts` | `NavItem` | Navigation link structure |
-
----
-
-## 🚦 Aturan Per Folder
-
-| Folder | Aturan |
-|---|---|
-| `components/` | ❌ Dilarang fetch API atau logic bisnis di luar hooks; hanya terima data lewat **props** |
-| `lib/` & `utils/` | ❌ Dilarang memasukkan JSX/UI; hanya **pure functions** |
-| `typing/` | ✅ Wajib beri nama file sesuai entitas (`Article.ts`, `Event.ts`) |
-| `data/mocks-data/` | ✅ Hanya data statis & fixture; **tidak boleh ada logic** |
-| `query/` | ✅ Hanya TanStack Query fetchers; gunakan untuk client-side fetching |
-| `hooks/` | ✅ Custom hooks yang memanfaatkan `query/` atau `lib/api.ts` |
+```
+[ CMS Admin Actions ]           [ Public Viewers ]
+        │                               │
+        ▼                               ▼
+ [ lib/adminApi.ts ]             [ lib/api.ts ]
+        │                               │
+        ├─────────► (If "mock") ◄───────┤
+        │        [ Shared db.ts ]       │
+        │      (InMemory Database)      │
+        │                               │
+        └─────────► (If "live") ◄───────┘
+                 [ Real Golang ]
+                 [ REST Backend]
+```
 
 ---
 
-## ✅ Do's
+## 🔒 Authentication Flow (Admin Panel)
 
-- **PascalCase** untuk file komponen (`HeroCard.tsx`, `ArticleDetail.tsx`)
-- **camelCase** untuk hooks (`useArticles.ts`) dan utilities (`dateUtils.ts`)
-- **Modularitas** — Pecah komponen > 150 baris menjadi sub-komponen di subfolder
-- **Type Safety** — Gunakan interface dari `typing/`; hindari `any`
-- **Semantic HTML** — Gunakan tag yang tepat untuk SEO portal berita (`<article>`, `<section>`, `<nav>`)
-- **Environment Variables** — Simpan konfigurasi di `.env.local`, dokumentasikan di `.env.example`
-- **Lazy Loading** — Gunakan `next/dynamic` untuk komponen client-heavy (carousel, slider)
-- **Image Optimization** — Selalu gunakan `next/image` dengan domain terdaftar di `next.config.js`
+* **Route Protection:** Access to any `/admin` route (excluding `/admin/login`) is guarded by NextAuth middleware defined in `middleware.ts`. Unauthorized traffic is redirected to `/admin/login`.
+* **Local Credentials (Mock Mode):**
+  * **Email:** `admin@maenews.com`
+  * **Password:** `admin123`
+* Credentials authorization occurs offline in the `authorize` callback within `app/lib/auth.ts`. When moving to a live backend, this should execute a fetch call to verify credentials with the backend JWT server.
 
 ---
 
-## ❌ Don'ts
+## 💾 Shared In-Memory Database (`app/lib/db.ts`)
 
-- **Hindari `any`** — Gunakan types yang sudah ada di `typing/`
-- **No Inline Styles** — Gunakan Tailwind CSS utility classes
-- **No Hardcoded Values** — Jangan simpan API Key/URL di komponen; gunakan `.env`
-- **No Direct State Mutation** — Gunakan setter dari `useState`
-- **No Comment/Uncomment Switching** — Gunakan env-based strategy pattern di `api.ts`
-
----
-
-## 🎨 Design System
-
-- **Font Utama**: Poppins (400, 500, 600, 700, 800, 900) via `next/font/google`
-- **Font Display**: ADLaM Display (judul dekoratif) via Google Fonts CDN
-- **Color Primary**: Orange (digunakan untuk aksen, underline, dan highlight section)
-- **CSS Framework**: Tailwind CSS v4 dengan `@tailwindcss/typography`
-- **Animation**: Framer Motion untuk transisi halaman dan komponen interaktif
-- **Icon Set**: Lucide React
-- **Component Primitives**: Radix UI (accessible, unstyled)
+To prevent the CMS mutations from being isolated from the user-facing side during mock development, `db.ts` exports a singleton state instance. 
+* Any edits (e.g. updating an article, renaming a category, removing a tag, changing site names, toggling featured articles) mutate the singleton array.
+* The public pages immediately read from this modified state, providing a full, realistic, zero-database local experience.
+* **Inline Edit Modals:** Category and Tag page rows contain inline Edit modals. Updating their name triggers a cascade rename across the `db.articles` arrays to ensure integrity.
 
 ---
 
-## 📦 Commit Convention
+## 🛠️ Backend Handoff Guide (Transitioning to Real REST Backend)
 
-| Prefix | Makna |
-|---|---|
-| `CMP` | Component Update |
-| `SC` | Screen Update |
-| `FC` | Function Update |
-| `ST` | State Update |
-| `RV` | Revision Update |
+To swap the offline mock data for a live Golang/REST API, the backend developer and frontend developer must do the following:
+
+### 1. Database Schema DDL
+The backend developer should use the provided index-optimized PostgreSQL DDL schema located in `docs/schema.sql` to initialize their database tables:
+* `categories`, `tags`, `author_profiles`, `articles`, `article_tags` (many-to-many junction), `events`, `gallery_items`, and `site_settings`.
+
+### 2. Implementing OpenAPI/Swagger Endpoints
+The backend developer must build REST endpoints matching the specifications in `docs/openapi.yaml`:
+* **Public Client endpoints:**
+  * `GET /articles` - List all published articles.
+  * `GET /articles/{slug}` - Fetch single published article.
+  * `POST /articles/{slug}/view` - Increment article view counter.
+  * `GET /category/{categoryName}` - List articles by category.
+  * `GET /tag/{tagName}` - List articles by tag.
+  * `GET /events/upcoming` - Get upcoming events list.
+  * `GET /events/{slug}` - Fetch single event details.
+  * `GET /trending` - List trending/featured articles.
+  * `GET /search/{query}` - Keyword article search.
+* **CMS Admin endpoints (Require Bearer Authentication):**
+  * `POST /articles` - Create new article.
+  * `PUT /articles/{slug}` - Update article.
+  * `DELETE /articles/{slug}` - Delete article.
+  * `GET /categories` - List categories (with post counts).
+  * `POST /categories` - Create category.
+  * `PUT /categories/{slug}` - Rename category.
+  * `DELETE /categories/{slug}` - Delete category.
+  * `GET /tags` - List tags.
+  * `POST /tags` - Create tag.
+  * `PUT /tags/{slug}` - Update tag.
+  * `DELETE /tags/{slug}` - Delete tag.
+  * `GET/POST/DELETE /gallery` - Manage media uploads.
+  * `GET/PUT /settings/site` - Config site meta.
+  * `GET/PUT /settings/author` - Config author info.
+
+### 3. Integrating endpoints on Frontend
+Once the REST server is ready:
+1. Update `.env.local` to:
+   ```env
+   NEXT_PUBLIC_API_MODE=live
+   NEXT_PUBLIC_API_BASE_URL=https://your-real-backend-api.com/api/v1
+   ```
+2. In `app/lib/auth.ts`, update `authorize()` to verify credentials with the backend JWT login endpoint and return the JWT token.
+3. Replace the mock return values in `app/lib/adminApi.ts` with real `fetch` or `apiClient` Axios calls to the admin endpoints. The public `app/lib/api.ts` is already wired to fetch from the live server endpoints when `live` mode is selected.

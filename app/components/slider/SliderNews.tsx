@@ -9,7 +9,6 @@ interface SliderNewsProps {
   articles: Article[];
   title: string;
 }
-
 export function SliderNews({ articles, title }: SliderNewsProps) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

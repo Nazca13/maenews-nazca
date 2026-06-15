@@ -1,17 +1,12 @@
 // app/lib/api.ts
 // ===================================================================
 // API Service — Strategy Pattern (Mock / Live)
-// Konfigurasi mode via environment variable NEXT_PUBLIC_API_MODE.
-// Lihat .env.example untuk detail.
+// Connects the mock service directly to the shared InMemoryDatabase `db`.
+// Changes in the CMS admin panel are dynamically reflected on the client site.
 // ===================================================================
 
 import { Article, TrendingItem, Event, ApiMode, ApiConfig } from "@/app/typing";
-import {
-  featuredArticle,
-  mockArticles,
-  trendingItems,
-  upcomingEvents,
-} from "@/app/data/mocks-data";
+import { db } from "./db";
 
 // --------------- Configuration ---------------
 
@@ -20,7 +15,7 @@ const API_CONFIG: ApiConfig = {
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     "https://golang-maenews-animae-id2569-ksgm0g96.leapcell.dev/api/v1",
   mode: (process.env.NEXT_PUBLIC_API_MODE as ApiMode) || "mock",
-}
+};
 
 // --------------- Service Interface ---------------
 
@@ -70,9 +65,7 @@ const liveService: ArticleService = {
   getEventBySlug: (slug) => fetchAPI<Event>(`/events/${slug}`),
 };
 
-// --------------- Mock Service ---------------
-
-const allMockArticles: Article[] = [featuredArticle, ...mockArticles];
+// --------------- Mock Service (Connected to shared db) ---------------
 
 /** Normalizes a URL slug (e.g. "content-creator") to title case ("Content Creator"). */
 function normalizeSlug(slug: string): string {
@@ -83,45 +76,74 @@ function normalizeSlug(slug: string): string {
 }
 
 const mockService: ArticleService = {
-  getAllArticles: async () => allMockArticles,
+  getAllArticles: async () => {
+    // Only return published articles to public users
+    return db.articles.filter((a) => a.status === "published");
+  },
 
-  getArticleBySlug: async (slug) =>
-    allMockArticles.find((a) => a.slug === slug) ?? null,
+  getArticleBySlug: async (slug) => {
+    return db.articles.find((a) => a.slug === slug && a.status === "published") ?? null;
+  },
 
   getArticlesByCategory: async (categoryName) => {
     const normalized = normalizeSlug(categoryName);
-    return allMockArticles.filter(
-      (a) => a.category.toLowerCase() === normalized.toLowerCase()
+    return db.articles.filter(
+      (a) =>
+        a.status === "published" &&
+        a.category.toLowerCase() === normalized.toLowerCase()
     );
   },
 
   getArticlesByTag: async (tagName) => {
     const normalized = normalizeSlug(tagName);
-    return allMockArticles.filter((a) =>
-      a.tags.some((t) => t.toLowerCase() === normalized.toLowerCase())
+    return db.articles.filter(
+      (a) =>
+        a.status === "published" &&
+        a.tags.some((t) => t.toLowerCase() === normalized.toLowerCase())
     );
   },
 
   searchArticles: async (query) => {
     const q = query.toLowerCase();
-    return allMockArticles.filter(
+    return db.articles.filter(
       (a) =>
-        a.title.toLowerCase().includes(q) ||
-        a.excerpt.toLowerCase().includes(q) ||
-        a.tags.some((t) => t.toLowerCase().includes(q))
+        a.status === "published" &&
+        (a.title.toLowerCase().includes(q) ||
+          a.excerpt.toLowerCase().includes(q) ||
+          a.tags.some((t) => t.toLowerCase().includes(q)))
     );
   },
 
   incrementArticleView: (slug) => {
-    console.log(`[MOCK] View tracked for: ${slug}`);
+    const article = db.articles.find((a) => a.slug === slug);
+    if (article) {
+      article.views = (article.views || 0) + 1;
+      console.log(`[MOCK] View tracked. Current views for ${slug}: ${article.views}`);
+    }
   },
 
-  getTrendingItems: async () => trendingItems,
+  getTrendingItems: async () => {
+    // Return published articles that are flagged as featured/trending
+    return db.articles
+      .filter((a) => a.status === "published" && a.featured)
+      .map((a) => ({
+        id: a.id,
+        title: a.title,
+        description: a.description || "",
+        slug: a.slug,
+        category: a.category,
+        publishedAt: a.publishedAt,
+        imageUrl: a.imageUrl,
+      }));
+  },
 
-  getUpcomingEvents: async () => upcomingEvents,
+  getUpcomingEvents: async () => {
+    return db.events;
+  },
 
-  getEventBySlug: async (slug) =>
-    upcomingEvents.find((e) => e.slug === slug) ?? null,
+  getEventBySlug: async (slug) => {
+    return db.events.find((e) => e.slug === slug) ?? null;
+  },
 };
 
 // --------------- Export Active Service ---------------

@@ -1,10 +1,11 @@
+# docs/openapi.yaml
 openapi: "3.0.3"
 
 info:
   title: Maenews API
   description: |
     REST API untuk portal berita anime, manga, dan kultur pop Jepang — **Maenews**.
-    API ini menyediakan endpoint untuk mengakses artikel, trending items, events, dan fitur pencarian.
+    API ini menyediakan endpoint untuk mengakses artikel, trending items, events, dan fitur pencarian, serta panel CMS Admin CRUD.
   version: "1.0.0"
   contact:
     name: Tim Animae
@@ -19,16 +20,24 @@ servers:
 tags:
   - name: Articles
     description: Operasi CRUD untuk artikel berita
+  - name: Events
+    description: Event/acara mendatang dan CRUD management
+  - name: Categories
+    description: Manajemen Kategori
+  - name: Tags
+    description: Manajemen Label/Tag
+  - name: Gallery
+    description: Manajemen Media Galeri
+  - name: Settings
+    description: Konfigurasi Site & Profil Author
   - name: Trending
     description: Item yang sedang trending
-  - name: Events
-    description: Event/acara mendatang
   - name: Search
     description: Pencarian artikel
 
 paths:
   # ──────────────────────────────────────────────
-  # Articles
+  # Articles (Public & Admin)
   # ──────────────────────────────────────────────
   /articles:
     get:
@@ -45,6 +54,33 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Article"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    post:
+      tags: [Articles]
+      summary: Create a new article (Admin)
+      description: Membuat artikel baru di database.
+      operationId: createArticle
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleInput"
+      responses:
+        "201":
+          description: Artikel berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           $ref: "#/components/responses/InternalError"
 
@@ -68,6 +104,52 @@ paths:
         "500":
           $ref: "#/components/responses/InternalError"
 
+    put:
+      tags: [Articles]
+      summary: Update article (Admin)
+      description: Memperbarui detail artikel berdasarkan slug.
+      operationId: updateArticle
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArticleInput"
+      responses:
+        "200":
+          description: Artikel berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Article"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+    delete:
+      tags: [Articles]
+      summary: Delete article (Admin)
+      description: Menghapus artikel secara permanen berdasarkan slug.
+      operationId: deleteArticle
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      responses:
+        "204":
+          description: Artikel berhasil dihapus
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
   /articles/{slug}/view:
     post:
       tags: [Articles]
@@ -83,80 +165,183 @@ paths:
           $ref: "#/components/responses/NotFound"
 
   # ──────────────────────────────────────────────
-  # Category & Tag
+  # Categories (Admin)
   # ──────────────────────────────────────────────
-  /category/{categoryName}:
+  /categories:
     get:
-      tags: [Articles]
-      summary: Get articles by category
-      description: Mengambil artikel berdasarkan nama kategori (slug format, e.g. `content-creator`).
-      operationId: getArticlesByCategory
+      tags: [Categories]
+      summary: List all categories
+      description: Mengambil seluruh daftar kategori berita.
+      operationId: getCategories
+      responses:
+        "200":
+          description: Daftar kategori
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      tags: [Categories]
+      summary: Create category
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: Pop Culture
+      responses:
+        "201":
+          description: Kategori berhasil dibuat
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /categories/{slug}:
+    put:
+      tags: [Categories]
+      summary: Rename category
+      security:
+        - BearerAuth: []
       parameters:
-        - name: categoryName
+        - name: slug
           in: path
           required: true
-          description: Slug kategori (e.g. `anime`, `manga`, `content-creator`, `game`, `cosplay`)
           schema:
             type: string
-            example: anime
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: J-Pop Culture
       responses:
         "200":
-          description: Daftar artikel dalam kategori
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Article"
-        "500":
-          $ref: "#/components/responses/InternalError"
+          description: Kategori berhasil diubah
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
-  /tag/{tagName}:
-    get:
-      tags: [Articles]
-      summary: Get articles by tag
-      description: Mengambil artikel berdasarkan nama tag (slug format).
-      operationId: getArticlesByTag
+    delete:
+      tags: [Categories]
+      summary: Delete category
+      security:
+        - BearerAuth: []
       parameters:
-        - name: tagName
+        - name: slug
           in: path
           required: true
-          description: Slug tag (e.g. `attack-on-titan`, `studio-ghibli`)
           schema:
             type: string
-            example: one-piece
       responses:
-        "200":
-          description: Daftar artikel dengan tag tersebut
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Article"
-        "500":
-          $ref: "#/components/responses/InternalError"
+        "204":
+          description: Kategori dihapus
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ──────────────────────────────────────────────
-  # Trending
+  # Tags (Admin)
   # ──────────────────────────────────────────────
-  /trending:
+  /tags:
     get:
-      tags: [Trending]
-      summary: Get trending items
-      description: Mengambil daftar item yang sedang trending.
-      operationId: getTrendingItems
+      tags: [Tags]
+      summary: List all tags
+      operationId: getTags
       responses:
         "200":
-          description: Daftar trending items
+          description: Daftar tags
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/TrendingItem"
-        "500":
-          $ref: "#/components/responses/InternalError"
+                  $ref: "#/components/schemas/Tag"
+    post:
+      tags: [Tags]
+      summary: Create tag
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: One Piece
+      responses:
+        "201":
+          description: Tag dibuat
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /tags/{slug}:
+    put:
+      tags: [Tags]
+      summary: Rename tag
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  example: One Piece Red
+      responses:
+        "200":
+          description: Tag diperbarui
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    delete:
+      tags: [Tags]
+      summary: Delete tag
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Tag dihapus
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
 
   # ──────────────────────────────────────────────
   # Events
@@ -165,7 +350,6 @@ paths:
     get:
       tags: [Events]
       summary: Get upcoming events
-      description: Mengambil daftar event/acara mendatang.
       operationId: getUpcomingEvents
       responses:
         "200":
@@ -176,14 +360,31 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Event"
-        "500":
-          $ref: "#/components/responses/InternalError"
+
+  /events:
+    post:
+      tags: [Events]
+      summary: Create event (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Event berhasil dibuat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
 
   /events/{slug}:
     get:
       tags: [Events]
       summary: Get event by slug
-      description: Mengambil detail satu event berdasarkan slug.
       operationId: getEventBySlug
       parameters:
         - $ref: "#/components/parameters/SlugParam"
@@ -194,44 +395,176 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Event"
-        "404":
-          $ref: "#/components/responses/NotFound"
-        "500":
-          $ref: "#/components/responses/InternalError"
 
-  # ──────────────────────────────────────────────
-  # Search
-  # ──────────────────────────────────────────────
-  /search/{query}:
-    get:
-      tags: [Search]
-      summary: Search articles
-      description: Mencari artikel berdasarkan kata kunci di judul, excerpt, dan tags.
-      operationId: searchArticles
+    put:
+      tags: [Events]
+      summary: Update event (Admin)
+      security:
+        - BearerAuth: []
       parameters:
-        - name: query
-          in: path
-          required: true
-          description: Kata kunci pencarian
-          schema:
-            type: string
-            example: demon slayer
+        - $ref: "#/components/parameters/SlugParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
       responses:
         "200":
-          description: Hasil pencarian
+          description: Event berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+    delete:
+      tags: [Events]
+      summary: Delete event (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/SlugParam"
+      responses:
+        "204":
+          description: Event berhasil dihapus
+
+  # ──────────────────────────────────────────────
+  # Gallery (Media)
+  # ──────────────────────────────────────────────
+  /gallery:
+    get:
+      tags: [Gallery]
+      summary: Get gallery items
+      responses:
+        "200":
+          description: List media files
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Article"
-        "500":
-          $ref: "#/components/responses/InternalError"
+                  $ref: "#/components/schemas/GalleryItem"
+    post:
+      tags: [Gallery]
+      summary: Upload gallery item (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, type, url]
+              properties:
+                title:
+                  type: string
+                type:
+                  type: string
+                  enum: [image, video]
+                url:
+                  type: string
+                  format: uri
+                category:
+                  type: string
+      responses:
+        "201":
+          description: Media berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryItem"
+
+  /gallery/{id}:
+    delete:
+      tags: [Gallery]
+      summary: Delete gallery item (Admin)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Media dihapus
+
+  # ──────────────────────────────────────────────
+  # Settings
+  # ──────────────────────────────────────────────
+  /settings/site:
+    get:
+      tags: [Settings]
+      summary: Get site settings
+      responses:
+        "200":
+          description: Site settings data
+    put:
+      tags: [Settings]
+      summary: Update site settings (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                siteName:
+                  type: string
+                siteDescription:
+                  type: string
+                logoUrl:
+                  type: string
+                faviconUrl:
+                  type: string
+                socialLinks:
+                  type: object
+      responses:
+        "200":
+          description: Settings updated
+
+  /settings/author:
+    get:
+      tags: [Settings]
+      summary: Get author profile
+    put:
+      tags: [Settings]
+      summary: Update author profile (Admin)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                avatarUrl:
+                  type: string
+                bio:
+                  type: string
+      responses:
+        "200":
+          description: Profile updated
 
 # ================================================================
 # Components
 # ================================================================
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   parameters:
     SlugParam:
       name: slug
@@ -261,75 +594,103 @@ components:
       properties:
         id:
           type: string
-          example: "1"
         title:
           type: string
-          example: Studio Ghibli Umumkan Proyek Anime Terbaru untuk 2026
         slug:
           type: string
-          example: studio-ghibli-umumkan-proyek-anime-terbaru-untuk-2026
         excerpt:
           type: string
-          example: Miyazaki kembali dengan karya masterpiece terbaru.
         description:
           type: string
-          example: Studio Ghibli kembali mencuri perhatian dunia animasi.
         category:
           type: string
-          enum: [Anime, Manga, Game, Content Creator, Cosplay]
-          example: Anime
         author:
           type: string
-          example: Redaksi AnimeFeed
         publishedAt:
           type: string
           format: date-time
-          example: "2025-07-30T10:30:00Z"
         imageUrl:
           type: string
           format: uri
-          example: https://placehold.co/600x400/1E293B/FFFFFF?text=Ghibli+News
         tags:
           type: array
           items:
             type: string
-          example: ["Studio Ghibli", "Miyazaki", "Anime Movie"]
         featured:
           type: boolean
-          example: false
         views:
           type: integer
-          example: 876
 
-    TrendingItem:
+    ArticleInput:
+      type: object
+      required:
+        - title
+        - excerpt
+        - description
+        - content
+        - category
+        - imageUrl
+        - status
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+        imageUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+
+    Category:
       type: object
       required:
         - id
-        - title
-        - description
+        - name
         - slug
-        - category
-        - publishedAt
+        - count
       properties:
         id:
           type: string
-          example: trending-1
-        title:
+        name:
           type: string
-          example: Demon Slayer Season 4 Dikonfirmasi
-        description:
-          type: string
-          example: Studio Ufotable mengumumkan kelanjutan anime fenomenal ini.
         slug:
           type: string
-          example: demon-slayer-season-4-dikonfirmasi
-        category:
+        count:
+          type: integer
+
+    Tag:
+      type: object
+      required:
+        - id
+        - name
+        - slug
+        - count
+      properties:
+        id:
           type: string
-          example: Anime
-        publishedAt:
+        name:
           type: string
-          format: date-time
-          example: "2025-07-30T10:00:00Z"
+        slug:
+          type: string
+        count:
+          type: integer
 
     Event:
       type: object
@@ -338,49 +699,119 @@ components:
         - title
         - slug
         - location
-        - date
-        - category
+        - startDate
+        - endDate
+        - status
         - description
-        - imageUrl
+        - thumbnailUrl
       properties:
         id:
           type: string
-          example: event-1
         title:
           type: string
-          example: Comic Frontier 17
         slug:
           type: string
-          example: comic-frontier-17
         location:
           type: string
-          example: ICE BSD, Tangerang
-        date:
+        startDate:
           type: string
           format: date-time
-          example: "2025-09-06T10:00:00Z"
-        category:
+        endDate:
           type: string
-          example: Convention
+          format: date-time
+        status:
+          type: string
+          enum: [upcoming, ongoing, ended]
         description:
           type: string
-          example: Event doujin dan indie creator terbesar di Indonesia.
-        imageUrl:
+        thumbnailUrl:
+          type: string
+        organizer:
+          type: string
+
+    EventInput:
+      type: object
+      required:
+        - title
+        - location
+        - startDate
+        - endDate
+        - status
+        - description
+        - thumbnailUrl
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        location:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [upcoming, ongoing, ended]
+        description:
+          type: string
+        thumbnailUrl:
+          type: string
+        organizer:
+          type: string
+
+    GalleryItem:
+      type: object
+      required:
+        - id
+        - title
+        - type
+        - url
+        - thumbnailUrl
+        - uploadedAt
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [image, video]
+        url:
           type: string
           format: uri
-          example: https://placehold.co/400x300/7C2D12/FFFFFF?text=Comifuro+17
+        thumbnailUrl:
+          type: string
+          format: uri
+        category:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
 
     ErrorResponse:
       type: object
       properties:
         message:
           type: string
-          example: Resource not found
         status:
           type: integer
-          example: 404
 
   responses:
+    BadRequest:
+      description: Bad request parameters
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Unauthorized admin token
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
     NotFound:
       description: Resource tidak ditemukan
       content:
